@@ -1,0 +1,327 @@
+config json read
+
+
+
+    //-------------------------------------------------------
+    // 从众多 json 文件中初始化数据库(config.json -> levelx.json)
+    //-------------------------------------------------------
+    /**加载配置数据 */
+    private async importFromConfig(configFile: string): Promise<void> {
+        try {
+            const response = await fetch(configFile);
+            const config = await response.json();
+            
+            // 初始化关卡数据
+            await this.initLevels(config.levels);
+            
+            // 加载单词数据
+            for (const levelData of config.levels) {
+                var filePath = 'assets/levels/' + levelData.file;
+                await this.importFromFile(filePath, levelData.levelId);
+            }
+        } catch (error) {
+            console.error('加载配置文件失败:', error);
+            throw error;
+        }
+    }
+
+    /**从文件加载单词数据 */
+    private async importFromFile(file: string, level: number): Promise<void> {
+        try {
+            const response = await fetch(file);
+            const data = await response.json();
+            if (!data.words || !Array.isArray(data.words)) {
+                throw new Error(`Invalid data format in ${file}: words array not found`);
+            }
+            await this.addWords(data.words, level);
+        } catch (error) {
+            console.error(`加载单词文件失败 ${file}:`, error);
+            throw error;
+        }
+    }
+
+
+    /**初始化关卡数据 */
+    private async initLevels(levels: Level[]): Promise<void> {
+        if (!this.db) throw new Error('Database not initialized');
+        const transaction = this.db.transaction('levels', 'readwrite');
+        const store = transaction.objectStore('levels');
+
+        return new Promise((resolve, reject) => {
+            transaction.oncomplete = () => resolve();
+            transaction.onerror = () => reject(transaction.error);
+
+            levels.forEach(level => {
+                store.put({
+                    levelId: level.levelId,
+                    title: level.title,
+                    total: level.total || 0,
+                    learned: 0
+                });
+            });
+        });
+    }
+
+            // 根据输入类型选择加载方式，根据扩展名区分 excel/json 两种方式
+                    var ext = configFile.split('.').pop();
+                    if (ext == 'json') {
+                        this.importFromConfig(configFile)
+                            .then(() => resolve())
+                            .catch(reject);
+                    } else {
+                    }
+
+        var accept = '.xlsx,.xls';
+        this.fileInput = document.createElement('input');
+        this.fileInput.type = 'file';
+        this.fileInput.accept = accept;
+        this.fileInput.style.display = 'none';
+        document.body.appendChild(this.fileInput);
+        const selectButton = new Button(scene, x + dialogWidth / 2, y + 240, '选择文件', {
+            width: 200,
+            height: 40,
+            bgColor: 0x2ecc71
+        });
+        selectButton.on('click', () => this.fileInput.click());
+        //this.add(selectButton);
+        this.fileInput.onchange = async (e: Event) => {
+            const target = e.target as HTMLInputElement;
+            var files = target.files;
+            await this.importFiles(files, target);
+        };
+
+        this.events.on('refreshLevels', async () => {
+            await this.showLevels();
+        });
+
+
+ButtonHelper
+        //ButtonHelper.createCircle(this, 60, 40,
+        //    GameConfig.icons.back.key,
+        //    {
+        //        size: 60,
+        //        bgColor: GameConfig.colors.contrast,
+        //        iconScale: 1.5
+        //    },
+        //    () => SceneHelper.goScene(this, 'StudyWelcomeScene')
+        //);
+
+
+       //ButtonHelper.create(
+        //    this,
+        //    buttonX,
+        //    buttonY,
+        //    '确认',
+        //    {
+        //        width: 140,
+        //        height: 60,
+        //        radius: 30,
+        //        fontSize: '38px',
+        //        depth: GameConfig.depths.top,
+        //        bgColor: 0x4a90e2
+        //    },
+        //    () => {
+        //        if (this.onConfirm) {
+        //            this.onConfirm();
+        //        }
+        //        if (this.parentScene) {
+        //            this.scene.resume(this.parentScene);
+        //        }
+        //        this.scene.stop();
+        //    }
+        //);
+
+            //ButtonHelper.create(
+            //    this,
+            //    this.cameras.main.width/2 + buttonSpacing,
+            //    buttonY,
+            //    '取消',
+            //    {
+            //        width: 140,
+            //        height: 60,
+            //        radius: 30,
+            //        fontSize: '38px',
+            //        depth: GameConfig.depths.top,
+            //        bgColor: 0xe74c3c
+            //    },
+            //    () => {
+            //        if (this.onCancel)
+            //            this.onCancel();
+            //        this.hideScene();
+            //    }
+            //);
+
+        //ButtonHelper.createCircle(this,
+        //    this.game.canvas.width - 60,
+        //    40,
+        //    GameConfig.icons.rotate.key,
+        //    {
+        //        size: 60,
+        //        bgColor: GameConfig.colors.primary,
+        //        iconScale: 1.2
+        //    },
+        //    async () => {
+        //        await this.doc.calcPages();
+        //        this.scene.restart({ 
+        //            levelId: this.levelId, 
+        //            levelName: this.levelName, 
+        //            mode: this.mode,
+        //            pageId: 0
+        //        });
+        //    }
+        //);
+
+        //ButtonHelper.createAnimated(this,
+        //    this.game.canvas.width / 2,
+        //    buttonY,
+        //    '学习',
+        //    {
+        //        width: 200,
+        //        height: 60,
+        //        radius: 30,
+        //        fontSize: '38px',
+        //        bgColor: 0x4a90e2
+        //    },
+        //    () => this.startGame('unlearned')
+        //);
+
+        //ButtonHelper.create(this,
+        //    this.game.canvas.width / 2,
+        //    buttonY + buttonSpacing,
+        //    '错词',
+        //    {
+        //        width: 200,
+        //        height: 60,
+        //        radius: 30,
+        //        fontSize: '38px',
+        //        bgColor: 0xe6a23c
+        //    },
+        //    () => this.startGame('error')
+        //);
+
+        //ButtonHelper.create(this,
+        //    this.game.canvas.width / 2,
+        //    buttonY + buttonSpacing * 2,
+        //    '重置',
+        //    {
+        //        width: 200,
+        //        height: 60,
+        //        radius: 30,
+        //        fontSize: '38px',
+        //        bgColor: 0x90be6d
+        //    },
+        //    async () => {
+        //        const result = await MessageBox.show(this, "确认重置", "该操作将重置所有学习记录，确认继续吗？", true);
+        //        if (result === DialogResult.Ok) {
+        //            await StudyDb.getInstance().resetDb();
+        //            await MessageBox.show(this, "重置成功", "单词库已重新设置，可重新开始学习", false);
+        //            //window.location.reload();
+        //            await this.showLevels();
+        //        }
+        //    }
+        //);
+
+        //ButtonHelper.create(this,
+        //    this.game.canvas.width / 2,
+        //    buttonY + buttonSpacing * 3,
+        //    '导入',
+        //    {
+        //        width: 200,
+        //        height: 60,
+        //        radius: 30,
+        //        fontSize: '38px',
+        //        bgColor: 0x8e44ad
+        //    },
+        //    () => this.importDialog.show()
+        //);
+
+    /**添加单词数据 */
+    private async addWords(levelId: number, words: Word[]): Promise<void> {
+        if (!this.db) throw new Error('Database not initialized');
+        const transaction = this.db.transaction('words', 'readwrite');
+        const store = transaction.objectStore('words');
+
+        return new Promise((resolve, reject) => {
+            transaction.oncomplete = () => resolve();
+            transaction.onerror = () => reject(transaction.error);
+
+            words.forEach(word => {
+                store.put({
+                    ...word,
+                    levelId,
+                    is_learn: false,
+                    is_error: false
+                });
+            });
+        });
+    }
+
+
+
+    /**获取已学习单词数量 */
+    async getLearnedWordCount(levelId: number): Promise<number> {
+        if (!this.db) throw new Error('Database not initialized');
+        return new Promise((resolve, reject) => {
+            const transaction = this.db!.transaction('words', 'readonly');
+            const store = transaction.objectStore('words');
+            const index = store.index('levelId');
+            const request = index.getAll(levelId);
+
+            request.onsuccess = () => {
+                const words = request.result;
+                const learnedCount = words.filter(word => word.is_learn).length;
+                resolve(learnedCount);
+            };
+            request.onerror = () => reject(request.error);
+        });
+    }
+
+
+
+
+    /**重置所有单词的学习进度 */
+    async resetWords(): Promise<void> {
+        if (!this.db) throw new Error('Database not initialized');
+        return new Promise((resolve, reject) => {
+            const transaction = this.db!.transaction(['words', 'levels'], 'readwrite');
+            const wordsStore = transaction.objectStore('words');
+            const levelsStore = transaction.objectStore('levels');
+
+            // 重置所有单词的学习状态
+            const wordsRequest = wordsStore.getAll();
+            wordsRequest.onsuccess = () => {
+                wordsRequest.result.forEach((word: Word) => {
+                    wordsStore.put({ ...word, is_learn: false, is_error: false });
+                });
+            };
+
+            // 重置所有关卡的学习进度
+            const levelsRequest = levelsStore.getAll();
+            levelsRequest.onsuccess = () => {
+                levelsRequest.result.forEach((level: Level) => {
+                    levelsStore.put({ ...level, learned: 0 });
+                });
+            };
+
+            transaction.oncomplete = () => resolve();
+            transaction.onerror = () => reject(transaction.error);
+        });
+    }
+
+
+
+            //const wordRequest = wordsStore.get(word.en);  // wordsStore.get(word.en, word.levelId);
+            //wordRequest.onsuccess = () => {
+            //    const updatedWord = { ...wordRequest.result, is_learn: b, is_error: wordRequest.result?.is_error || false };
+            //    wordsStore.put(updatedWord);
+//
+            //    // 更新关卡学习进度
+            //    if (b) {
+            //        const levelRequest = levelsStore.get(word.levelId);
+            //        levelRequest.onsuccess = () => {
+            //            const level = levelRequest.result;
+            //            level.learned = (level.learned || 0) + 1;
+            //            levelsStore.put(level);
+            //        };
+            //    }
+            //};

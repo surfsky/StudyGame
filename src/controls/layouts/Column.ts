@@ -1,16 +1,16 @@
 import { GameObjects } from "phaser";
 
 export class Column extends GameObjects.Rectangle {
-    private spacing: number = 0;
+    private gap: number = 0;
     private autoWrap: boolean = false;
     private container: GameObjects.Container;
 
-    constructor(scene: Phaser.Scene, x:number=0, y:number= 0, width:number=100, height:number=100, spacing:number=0, autoWrap:boolean=false)
+    constructor(scene: Phaser.Scene, x:number=0, y:number= 0, width:number=100, height:number=100, gap:number=0, autoWrap:boolean=false)
     {
         super(scene, x, y, width, height);
         scene.add.existing(this);
         this.setOrigin(0, 0);
-        this.spacing = spacing;
+        this.gap = gap;
         this.autoWrap = autoWrap;
         this.container = scene.add.container(x, y);
     }
@@ -49,7 +49,7 @@ export class Column extends GameObjects.Rectangle {
             // 检查是否需要换列
             if (this.autoWrap && currentY + gameObject.height > this.height) {
                 currentY = 0;
-                currentX += columnMaxWidth + this.spacing;
+                currentX += columnMaxWidth + this.gap;
                 columnMaxWidth = 0;
             }
 
@@ -57,12 +57,30 @@ export class Column extends GameObjects.Rectangle {
             gameObject.setPosition(currentX, currentY);
 
             // 更新当前位置和最大宽度
-            currentY += gameObject.height + this.spacing;
+            currentY += gameObject.height + this.gap;
             columnMaxWidth = Math.max(columnMaxWidth, gameObject.width);
             maxWidth = Math.max(maxWidth, currentX + gameObject.width);
         });
 
         // 更新容器大小
         this.setSize(maxWidth, this.height);
+    }
+
+    public showBounds(): void {
+        const bounds = this.getBounds();
+        const graphics = this.scene.add.graphics();
+        graphics.lineStyle(1, 0xff0000);
+        graphics.strokeRectShape(bounds);
+    }
+
+    public showChildrenBounds(): void {
+        this.container.each((child: Phaser.GameObjects.GameObject) => {
+            const gameObject = child as any;
+            if (!gameObject.width ||!gameObject.height) return;
+            const bounds = gameObject.getBounds();
+            const graphics = this.scene.add.graphics();
+            graphics.lineStyle(1, 0x0000ff);
+            graphics.strokeRectShape(bounds);
+        })
     }
 }

@@ -1,12 +1,20 @@
-import { Scene } from 'phaser';
+import { GameObjects, Scene } from 'phaser';
 import { GameConfig } from '../GameConfig';
 import { StudyDoc } from './StudyDoc';
 import { SceneHelper } from '../utils/SceneHelper';
 import { WordItem } from './WordItem';
 import { Level } from './StudyDb';
-import { Rect } from '../controls/Rect';
+import { RectShape } from '../controls/RectShape';
 import { Button } from '../controls/forms/Button';
+import { Word } from './StudyDb';
+import { DropDownList } from '../controls/forms/DropDownList';
 
+/** */
+interface SortOption {
+    icon: string;
+    text: string;
+    value: string;
+}
 
 /**
  * 学习场景
@@ -25,6 +33,9 @@ export class StudyScene extends Scene {
     private endPoint: Phaser.Math.Vector2 = new Phaser.Math.Vector2();
     private line: Phaser.GameObjects.Graphics | null = null;
     private statText: Phaser.GameObjects.Text | null = null;
+
+    private btn!: Button;
+
 
     //-----------------------------------------------------
     // Scene 标准接口方法
@@ -82,6 +93,7 @@ export class StudyScene extends Scene {
     /**创建场景UI */
     async create() {
         this.createUI();
+        this.line = this.add.graphics().setDepth(GameConfig.depths.bg + 1);
         await this.createWordItems();
         await this.showStat();
         this.setupDragSystem();
@@ -91,34 +103,75 @@ export class StudyScene extends Scene {
     //-----------------------------------------------------
     // UI
     //-----------------------------------------------------
+    createSortDropDown() {
+        var items: SortOption[] = [
+            { icon: 'sort-raw', text: '原始顺序', value: 'raw' },
+            { icon: 'sort-alphabet', text: '字母顺序', value: 'alphabet' },
+            { icon: 'sort-random', text: '随机顺序', value: 'random' }
+        ];
+        var ddl = new DropDownList(this, {
+            x: this.game.canvas.width - 100,
+            y: 40,
+            width: 40,
+            height: 40,
+            fontSize: '18px',
+            textColor: '#ffffff',
+            backgroundColor: GameConfig.colors.contrast,
+        });
+        ddl.setBaseUI((item: SortOption) => {
+            const container = new Phaser.GameObjects.Container(this, 0, 0);
+            this.btn = new Button(this, 0, 0, "", {
+                active: false, 
+                width: 30, height:30, radius:0, 
+                textColor: '#ffffff',
+                bgColor:GameConfig.colors.contrast
+            });
+            this.btn.setIcon(item.icon, 1.4);
+            //this.btn.setText(item.text);
+            container.add(this.btn);
+            return container;
+        });
+        ddl.setBaseUIOnShow((item: SortOption) => {
+            this.btn.setIcon(item.icon, 1.4);
+            //this.btn.setText(item.text);
+        });
+        ddl.setItemUI((item: SortOption, index:number) => {
+            const container = new Phaser.GameObjects.Container(this, 0, 0);
+            var btn = new Button(this, 0, 0, "", {
+                active: false, 
+                width: 150, height:30, radius:0, 
+                textColor: '#ffffff',
+                bgColor: 0x000000
+            });
+            btn.setIcon(item.icon, 1.4);
+            btn.setText(item.text);
+            btn.setSize(100, 40);
+            container.add(btn);
+            return container;
+        });
+        ddl.onChanged(async (index:number, item: SortOption)=>{
+            await this.createWordItems(item.value as 'raw' | 'alphabet' | 'random');
+        })
+        ddl.bind(items, 'value', 'text');
+        ddl.setDepth(999);
+    }
+
     private createUI() {
-        const bottomY = this.game.canvas.height - 40;
         this.add.image(0, 0, 'bg')
             .setOrigin(0)
             .setDisplaySize(this.game.canvas.width, this.game.canvas.height)
             .setDepth(-1);
-        new Rect(this, 0, 0, this.game.canvas.width, this.game.canvas.height, 0, 0x000000, 0.5);
+        new RectShape(this, 0, 0, this.game.canvas.width, this.game.canvas.height, 0, 0x000000, 0.5);
 
         // 返回按钮
         new Button(this, 60, 40, '', { width: 60, height: 60, radius:30, bgColor: GameConfig.colors.contrast })
             .setIcon(GameConfig.icons.back.key, 1.5)
-            //.setAnimate()
             .onClick(() => SceneHelper.goScene(this, 'StudyWelcomeScene', {levelId: this.levelId}))
             ;
 
 
-        // 刷新按钮
-        new Button(this, this.game.canvas.width - 60, 40, '', { width: 60, height: 60, radius:30, bgColor: GameConfig.colors.contrast })
-            .setIcon(GameConfig.icons.rotate.key, 1.2)
-            .onClick(async() => {
-                await this.doc.calcPages();
-                this.scene.restart({ 
-                    levelId: this.levelId, 
-                    levelName: this.levelName, 
-                    mode: this.mode,
-                    pageId: 0
-                });
-            });
+        // 排序按钮
+        this.createSortDropDown();
 
 
         //--------------------------------------------
@@ -175,7 +228,7 @@ export class StudyScene extends Scene {
     /**更新学习进度统计信息 */
     private async showStat() {
         var status = await this.doc.getStat();
-        var txt = `对${status.learned}错${status.error}总${status.total}`;
+        var txt = `对${status.learned}错${status.error}余${status.total}`;
         this.statText!.setText(txt);
     } 
 
@@ -183,7 +236,7 @@ export class StudyScene extends Scene {
     // 主游戏页面
     //--------------------------------------------
     /**创建左侧的英文单词容器 */
-    private async createWordItems() {
+    private async createWordItems(sortType: 'raw' | 'alphabet' | 'random' = 'raw') {
         // 根据屏幕高度计算每页可显示的单词数量
         const screenHeight = this.game.canvas.height;
         const startY = 150; // 单词起始Y坐标
@@ -197,6 +250,12 @@ export class StudyScene extends Scene {
         const itemWidth = Math.min(Math.max((screenWidth - margin*2 - centerGap)/2, 120), 400); // 根据屏幕宽度计算，但不超过最大值
         console.log(`StudyScene.createWordItems: 计算页大小=${pageSize}, 页码=${this.pageId}`);
 
+        // 清除现有单词项
+        this.leftItems.forEach(item => item.destroy());
+        this.rightItems.forEach(item => item.destroy());
+        this.leftItems = [];
+        this.rightItems = [];
+
         // 初始化关卡数据
         await this.doc.init(this.levelId, this.mode, pageSize, this.pageId);
         const enWords = this.doc.getEnWords();
@@ -208,7 +267,7 @@ export class StudyScene extends Scene {
             this.add.text(
                 this.game.canvas.width / 2,
                 this.game.canvas.height / 2,
-                `该级别已经学习完毕啰～`,
+                `没有要学的单词啰～`,
                 {
                     fontSize: '24px',
                     color: '#ffffff',
@@ -222,12 +281,13 @@ export class StudyScene extends Scene {
 
         // 创建英中文单词控件
         enWords.forEach((word, index) => {
-            const item = new WordItem(this, 'en', word, margin+itemWidth/2, startY + index * spacing, itemWidth, itemHeight);
-            this.leftItems.push(item);
+            const enItem = new WordItem(this, word, 'en', word.en, margin+itemWidth/2, startY + index * spacing, itemWidth, itemHeight);
+            this.leftItems.push(enItem);
         });
         cnWords.forEach((word, index) => {
-            const item = new WordItem(this, 'cn', word, screenWidth - margin-itemWidth/2, startY + index * spacing, itemWidth, itemHeight);
-            this.rightItems.push(item);
+            // 创建中文单词控件
+            const cnItem = new WordItem(this, word, 'cn', word.cn, screenWidth - margin-itemWidth/2, startY + index * spacing, itemWidth, itemHeight);
+            this.rightItems.push(cnItem);
         });
     }
 
@@ -249,7 +309,6 @@ export class StudyScene extends Scene {
                     this.startPoint.set(bounds.right, bounds.centerY);
                 else
                     this.startPoint.set(bounds.left, bounds.centerY);
-                this.line = this.add.graphics().setDepth(GameConfig.depths.bg + 1);
                 
                 // 给当前item添加红色边框
                 this.leftItems.forEach(item => {item.setHighlight(false);});
@@ -309,19 +368,14 @@ export class StudyScene extends Scene {
             return null;
         this.endPoint = new Phaser.Math.Vector2(pointer.x, pointer.y);
         let hoverItem: WordItem | null = null;
-        let minDistance = Number.MAX_VALUE;
-        const maxDistance = 50; // 判定范围
         items.forEach(item => {
             const bounds = item.getBounds();
-            const centerX = this.startItem ? (this.startItem.isEn() ? bounds.left : bounds.right) : bounds.right;
-            const centerY = bounds.centerY;
-            const dx = pointer.x - centerX;
-            const dy = pointer.y - centerY;
-            const distance = Math.sqrt(dx * dx + dy * dy);
-            if (distance < maxDistance && distance < minDistance) {
-                minDistance = distance;
+            if (pointer.x >= bounds.left && pointer.x <= bounds.right && 
+                pointer.y >= bounds.top && pointer.y <= bounds.bottom) {
                 hoverItem = item;
-                this.endPoint.set(centerX, centerY);
+                // 设置连线的终点为 WordItem 的左边或右边中点
+                const centerX = this.startItem!.isEn() ? bounds.left : bounds.right;
+                this.endPoint.set(centerX, bounds.centerY);
             }
         });
         return hoverItem;
@@ -334,9 +388,44 @@ export class StudyScene extends Scene {
         this.line.clear();
         this.line.lineStyle(3, 0xff0000);
         this.line.beginPath();
+        
+        // 设置连线的起点为左侧单词的右边中点，终点为右侧单词的左边中点
+        const bounds = this.startItem!.getBounds();
+        const startX = this.startItem!.isEn() ? bounds.right : bounds.left;
+        this.startPoint.set(startX, bounds.centerY);
+        
+        // 计算三次贝塞尔曲线的控制点
+        const distance = Math.abs(this.endPoint.x - this.startPoint.x);
+        const cp1x = this.startPoint.x + distance * 0.5;
+        const cp1y = this.startPoint.y - distance * 0;
+        const cp2x = this.endPoint.x - distance * 0.5;
+        const cp2y = this.endPoint.y + distance * 0;
+        
+        // 使用多个线段模拟贝塞尔曲线
         this.line.moveTo(this.startPoint.x, this.startPoint.y);
-        this.line.lineTo(this.endPoint.x, this.endPoint.y);
+        const segments = 20; // 线段数量
+        for (let i = 0; i <= segments; i++) {
+            const t = i / segments;
+            const x = Math.pow(1-t, 3) * this.startPoint.x + 
+                      3 * Math.pow(1-t, 2) * t * cp1x + 
+                      3 * (1-t) * Math.pow(t, 2) * cp2x + 
+                      Math.pow(t, 3) * this.endPoint.x;
+            const y = Math.pow(1-t, 3) * this.startPoint.y + 
+                      3 * Math.pow(1-t, 2) * t * cp1y + 
+                      3 * (1-t) * Math.pow(t, 2) * cp2y + 
+                      Math.pow(t, 3) * this.endPoint.y;
+            this.line.lineTo(x, y);
+        }
         this.line.strokePath();
+        
+        // 在连线两端绘制圆点
+        const radius = 4;
+        this.line.fillStyle(0xff0000, 1);
+        this.line.lineStyle(0xff0000, 1);
+        this.line.fillCircle(this.startPoint.x, this.startPoint.y, radius);
+        this.line.fillCircle(this.endPoint.x, this.endPoint.y, radius);
     }
+
+    
 }
 

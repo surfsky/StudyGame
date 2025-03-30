@@ -1,7 +1,7 @@
 import { Scene } from 'phaser';
 import { Button } from '../forms/Button';
 import { Mask } from './Mask';
-import { Rect } from '../Rect';
+import { RectShape } from '../RectShape';
 import { DialogResult } from './DialogResult';
 import { GameConfig } from '../../GameConfig';
 
@@ -42,7 +42,7 @@ export class Dialog extends Phaser.GameObjects.Container {
     }
 
     // 构造函数
-    constructor(scene: Scene, text: string='', width: number=400, height: number=300, showModel: boolean=true) {
+    constructor(scene: Scene, text: string='', width: number=300, height: number=200, showModel: boolean=true) {
         const x = scene.cameras.main.centerX - width / 2;
         const y = scene.cameras.main.centerY - height / 2;
 
@@ -55,35 +55,35 @@ export class Dialog extends Phaser.GameObjects.Container {
         this.showModel = showModel;
         if (showModel){
             this.masker = new Mask(scene).setDepth(GameConfig.depths.dialog - 1);
-            //this.add(this.masker);  // masker 独立存在
         }
 
         // 创建对话框背景
-        var rect = new Rect(scene, 0, 0, width, height, 15, 0xffffff, 1, 0x000000, 2);
+        var rect = new RectShape(scene, 0, 0, width, height, 15, 0xffffff, 1, 0x000000, 2);
         this.add(rect);
 
         // 创建关闭按钮
-        const closeButton = new Button(scene, width - 30, 30, 'X', {
-            width: 30,
-            height: 30,
-            radius: 15,
+        const closeButton = new Button(scene, width - 25, 25, 'X', {
+            width: 24,
+            height: 24,
+            radius: 12,
             bgColor: 0xe74c3c,
-            fontSize: '16px'
+            fontSize: '14px'
         }).on('click', () => this.close(DialogResult.Cancel));
         this.add(closeButton);
 
         // 创建文本
         if (text) {
-            const label = scene.add.text(this.width / 2, this.height/2, text, {
-                fontSize: 24,
-                color: '#000000',
+            const lines = text.split('\n').filter(line => line.trim() !== '');
+            const formattedText = lines.join('\n');
+            const label = scene.add.text(this.width / 2, this.height/2, formattedText, {
+                fontSize: 20,
+                color: '#333333',
                 align: 'center',
-                lineSpacing: 20,
+                lineSpacing: 12,
                 wordWrap: {
-                    width: this.width - 60,
+                    width: this.width - 40,
                     useAdvancedWrap: true
-                },
-                padding: {x: 20, y: 20}
+                }
             }).setOrigin(0.5, 0.5);
             this.add(label);
         }

@@ -30,6 +30,8 @@ export interface ButtonOptions {
     iconPosition?: string;
     /** 禁用状态下的透明度 */
     disabledAlpha?: number;
+
+    active?: boolean;
 }
 
 /*********************************************************
@@ -50,7 +52,8 @@ export class Button extends Phaser.GameObjects.Container {
         iconScale: 1,
         iconSpacing: 5,
         iconPosition: 'left',
-        disabledAlpha: 0.5
+        disabledAlpha: 0.5,
+        active: true
     };
 
     private options: ButtonOptions;
@@ -92,8 +95,8 @@ export class Button extends Phaser.GameObjects.Container {
         }
 
         this.setSize(this.options.width!, this.options.height!);
-        this.setInteractive({ cursor: 'pointer' });
-        this.setEvents();
+        if (this.options.active)
+            this.setEvents();
     }
 
     /**绘制背景 */
@@ -114,6 +117,7 @@ export class Button extends Phaser.GameObjects.Container {
     // 事件处理
     //----------------------------------------------------------
     private setEvents(): void {
+        this.setInteractive({ cursor: 'pointer' });
         this.on('pointerover', this.onPointerOver, this)
             .on('pointerout', this.onPointerOut, this)
             .on('pointerdown', this.onPointerDown, this)
@@ -150,6 +154,17 @@ export class Button extends Phaser.GameObjects.Container {
         this.isPressed = false;
         this.setScale(1);
     }
+
+    /**
+     * 添加点击事件监听器
+     * @param callback 回调函数
+     * @param context 上下文
+     */
+    public onClick(callback: Function, context?: any): this {
+        this.on('click', callback, context);
+        return this;
+    }
+
 
     //----------------------------------------------------------
     // 公共方法
@@ -272,16 +287,6 @@ export class Button extends Phaser.GameObjects.Container {
             this.icon.setScale(this.options.iconScale!);
         }
         this.updateLayout();
-        return this;
-    }
-
-    /**
-     * 添加点击事件监听器
-     * @param callback 回调函数
-     * @param context 上下文
-     */
-    public onClick(callback: Function, context?: any): this {
-        this.on('click', callback, context);
         return this;
     }
 }

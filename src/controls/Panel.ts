@@ -3,6 +3,7 @@
 export class Panel extends Phaser.GameObjects.Container {
     private contentH: number = 0;
     private contentMask: Phaser.GameObjects.Graphics;
+    private bg: Phaser.GameObjects.Rectangle;
 
     /**
      * 创建一个可滚动的面板
@@ -29,11 +30,18 @@ export class Panel extends Phaser.GameObjects.Container {
         this.setMask(new Phaser.Display.Masks.GeometryMask(scene, this.contentMask));
 
         // 创建背景
-        var bg = this.createRoundRect(scene, 0, 0, w, contentH, radius, bgColor, bgAlpha);
-        this.add(bg);
+        //this.bg = this.createRoundRect(scene, 0, 0, w, contentH, radius, bgColor, bgAlpha);
+        this.bg = scene.add.rectangle(0, 0, w, contentH, bgColor, bgAlpha).setOrigin(0, 0).setDepth(this.depth - 1);
+        this.add(this.bg);
 
         // 创建滚动轴
         this.setScrollbar(handerColor, handerAlpha);
+    }
+
+    /**设置深度（将背景层的层次也提高 */
+    override setDepth(value: number): this {
+        this.bg.setDepth(value - 1);
+        return super.setDepth(value);
     }
 
     /**设置滚动轴滑块 */
@@ -58,8 +66,11 @@ export class Panel extends Phaser.GameObjects.Container {
     }
 
     /**设置实际内容高度 */
-    setContentHeight(contentH: number) {
+    public setContentHeight(contentH: number) {
         this.contentH = contentH;
+        // set mask
+        this.contentMask.clear();
+        this.contentMask.fillRoundedRect(this.x, this.y, this.width, this.height, 10);
         this.setScrollbar();
     }
 
@@ -68,17 +79,21 @@ export class Panel extends Phaser.GameObjects.Container {
         var contentH = this.contentH;
         var y = this.y;
         var h = this.height;
-
         let isDragging = false;
         let lastY = 0;
-        scene.input.on('pointerdown', (pointer: Phaser.Input.Pointer) => {
+
+        // scene.input
+        this.bg.setInteractive();
+        this.bg.on('pointerdown', (pointer: Phaser.Input.Pointer) => {
             isDragging = true;
             lastY = pointer.y;
+            pointer.event.stopPropagation();  // 阻止事件穿透到下面
         });
-        scene.input.on('pointerup', () => {
+        this.bg.on('pointerup', (pointer: Phaser.Input.Pointer) => {
             isDragging = false;
+            //pointer.event.stopPropagation();  // 阻止事件穿透到下面
         });
-        scene.input.on('pointermove', (pointer: Phaser.Input.Pointer) => {
+        this.bg.on('pointermove', (pointer: Phaser.Input.Pointer) => {
             if (!isDragging) return;
             var dy = pointer.y - lastY;
             lastY = pointer.y;
@@ -93,10 +108,11 @@ export class Panel extends Phaser.GameObjects.Container {
             // 更新容器和滑块位置
             this.y = newY;
             scrollBar.y = y - dy;
+            //pointer.event.stopPropagation();  // 阻止事件穿透到下面
         });
 
         // 添加鼠标滚轮事件支持
-        scene.input.on('wheel', (pointer: Phaser.Input.Pointer, gameObjects: any, deltaX: number, deltaY: number) => {
+        this.bg.on('wheel', (pointer: Phaser.Input.Pointer, gameObjects: any, deltaX: number, deltaY: number) => {
             // 计算滚动距离，deltaY为正表示向下滚动，为负表示向上滚动
             const scrollSpeed = 0.5;
             const dy = -deltaY * scrollSpeed;
@@ -111,6 +127,7 @@ export class Panel extends Phaser.GameObjects.Container {
             // 更新容器和滑块位置
             this.y = newY;
             scrollBar.y = scrollBar.y - actualDy;
+            //pointer.event.stopPropagation();  // 阻止事件穿透到下面
         });
     }
 

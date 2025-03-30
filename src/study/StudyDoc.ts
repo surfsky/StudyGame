@@ -1,4 +1,4 @@
-import { StudyDb } from './StudyDb';
+import { StudyDb, Word } from './StudyDb';
 
 /**
  * 游戏关卡数据和逻辑管理类
@@ -9,8 +9,8 @@ export class StudyDoc {
     public pageSize: number = 10;
     public pageId: number = 0;
     private matchCount: number = 0;
-    private pageWords: Array<{en: string, cn: string}> = [];  // 当前页单词清单
-    private matchWord: {en: string, cn: string} | null = null;
+    private pageWords: Array<Word> = [];  // 当前页单词清单
+    private matchWord: Word | null = null;
     public mode: 'all' | 'unlearned' | 'error' = 'all';
 
     // 回调函数
@@ -28,23 +28,16 @@ export class StudyDoc {
         
         // 该等级下的所有数据
         const db = await StudyDb.getInstance();
-        let allWords: Array<{en: string, cn: string}>;
         switch(mode) {
             case 'unlearned':
-                allWords = await db.getUnlearnedWords(levelId, pageSize, pageId);
+                this.pageWords = await db.getUnlearnedWords(levelId, pageSize, pageId);
                 break;
             case 'error':
-                allWords = await db.getErrorWords(levelId, pageSize, pageId);
+                this.pageWords = await db.getErrorWords(levelId, pageSize, pageId);
                 break;
             default:
-                allWords = await db.getWords(levelId, pageSize, pageId);
+                this.pageWords = await db.getWords(levelId, pageSize, pageId);
         }
-        
-        // 获取当前页数据，并转换为游戏所需的格式
-        this.pageWords = allWords.map(w => ({
-            en: w.en,
-            cn: w.cn
-        }));
     }
 
     /**检测是否配对 */
@@ -55,9 +48,9 @@ export class StudyDoc {
         if (pair) {
             // 匹配成功
             this.matchCount++;
-            await db.setWordLearn({ en: enWord, cn: cnWord, levelId: this.levelId }, true);
+            await db.setWordLearn({ en: enWord, cn: cnWord, levelId: this.levelId, is_learn: true }, true);
             if (this.mode == 'error')
-                await db.setWordError({ en: enWord, cn: cnWord, levelId: this.levelId }, false);  // 仅错题模式才运行删除错题记录，便于复习
+                await db.setWordError({ en: enWord, cn: cnWord, levelId: this.levelId, is_error: false }, false);  // 仅错题模式才运行删除错题记录，便于复习
             if (this.onMatchSuccess) 
                 this.onMatchSuccess();
 
@@ -72,7 +65,7 @@ export class StudyDoc {
             // 匹配失败
             const correctPair = this.pageWords.find(w => w.en === enWord || w.cn === cnWord);
             if (correctPair) 
-                await db.setWordError({ en: correctPair.en, cn: correctPair.cn, levelId: this.levelId }, true);
+                await db.setWordError({ en: correctPair.en, cn: correctPair.cn, levelId: this.levelId, is_error: true }, true);
             if (this.onMatchFail) 
                 this.onMatchFail();
             return false;
@@ -98,7 +91,6 @@ export class StudyDoc {
         // 统计已学习和错误的单词数
         const learned = allWords.filter(word => word.is_learn === true).length;
         const error = allWords.filter(word => word.is_error === true).length;
-        
         return { learned, error, total };
     }
     
@@ -119,18 +111,31 @@ export class StudyDoc {
         }
     }
     
-    /**获取打乱顺序的中文单词列表*/
-    getShuffledCnWords(): string[] {
-        return this.pageWords.map(w => w.cn).sort(() => Math.random() - 0.5);
+    /**获取英文单词列表*/
+    getEnWords(sortType: 'raw' | 'alphabet' | 'random' = 'raw'): Word[] {
+        let words = [...this.pageWords];
+        switch (sortType) {
+            case 'alphabet':
+                return words.sort((a, b) => a.en.localeCompare(b.en));
+            case 'random':
+                return words.sort(() => Math.random() - 0.5);
+            default:
+                return words;
+        }
     }
 
-    /**获取英文单词列表*/
-    getEnWords(): string[] {
-        return this.pageWords.map(w => w.en);
+    /**获取打乱顺序的中文单词列表*/
+    getShuffledCnWords(): Word[] {
+        return [...this.pageWords].sort(() => Math.random() - 0.5);
     }
 
     /**获取当前匹配的单词*/
-    getMatchWord(): {en: string, cn: string} | null {
+    getMatchWord(): Word | null {
         return this.matchWord;
+    }
+
+    /**获取当前页面的单词列表*/
+    getWords(): Array<Word> {
+        return this.pageWords;
     }
 }

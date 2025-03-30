@@ -5,6 +5,14 @@
 export class Mask extends Phaser.GameObjects.Container {
     private bg: Phaser.GameObjects.Rectangle;
     private isVisible: boolean = false;
+    private onClickCallback: Function | null = null;
+    /**
+     * 点击事件回调函数
+     * @param {Function} callback - 回调函数
+     */
+    public onClick(callback: Function): void {
+        this.onClickCallback = callback;
+    }
 
     /**
      * 创建遮罩控件
@@ -15,24 +23,33 @@ export class Mask extends Phaser.GameObjects.Container {
      * @param {boolean} [config.interactive=true] - 是否可交互
      */
     constructor(scene: Phaser.Scene, config: {
+        depth?: number,
         color?: number,
         alpha?: number,
         interactive?: boolean
     } = {}) {
         super(scene, 0, 0);
         scene.add.existing(this);
-        const { color = 0x000000, alpha = 0.5, interactive = true } = config;
+        const { color = 0x000000, alpha = 0.5, interactive = true, depth=-1 } = config;
 
         // 创建全屏背景
         this.bg = scene.add.rectangle(0, 0, scene.cameras.main.width, scene.cameras.main.height, color, alpha);
         this.bg.setOrigin(0);
         this.add(this.bg);
 
+        // depth
+        if (depth !== -1) {
+            this.setDepth(depth);
+        }
+
         // 设置交互
         if (interactive) {
-            this.bg.setInteractive();
+            this.bg.setInteractive();  // 该语句就会阻止事件穿透到下层
             this.bg.on('pointerdown', (pointer: Phaser.Input.Pointer) => {
-                pointer.event.stopPropagation();
+                //pointer.event.stopPropagation();
+                if (this.onClickCallback) {
+                    this.onClickCallback();
+                }
             });
         }
 

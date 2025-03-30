@@ -42,10 +42,11 @@ export class TTS {
             });
         };
 
-        // 获取并过滤中文语音
-        this.voices = (await getVoices()).filter(voice => voice.lang === 'zh-CN');
+        // 获取并过滤英语语音
+        this.voices = (await getVoices()).filter(voice => voice.lang.startsWith('en'));
         if (this.voices.length > 0) {
-            this.selectedVoice = this.voices[0];
+            // 优先选择美式英语语音
+            this.selectedVoice = this.voices.find(voice => voice.lang === 'en-US') || this.voices[0];
         }
     }
 
@@ -77,7 +78,7 @@ export class TTS {
 
         // 创建语音合成请求
         const utterance = new SpeechSynthesisUtterance(text);
-        utterance.lang = 'zh-CN';
+        utterance.lang = this.selectedVoice?.lang || 'en-US';
         utterance.volume = this.volume;
         utterance.rate = 1.0;
         utterance.pitch = 1.0;

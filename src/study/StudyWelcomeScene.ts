@@ -16,9 +16,8 @@ import { Dialog } from '../controls/overlays/Dialog';
 export class StudyWelcomeScene extends Scene {
     private isMuted: boolean = false;
     private levelId: number = 0;
-    private levelDropdown!: DropDownList;
-    private levels: Level[] = [];
-    private importDialog!: ImportDialog;
+    private levelDropdown?: DropDownList | null;
+    private importDialog?: ImportDialog;
 
     constructor() {
         super({ key: 'StudyWelcomeScene' });
@@ -38,6 +37,9 @@ export class StudyWelcomeScene extends Scene {
         this.load.audio(GameConfig.sounds.click.key, GameConfig.sounds.click.path);
         this.load.image(GameConfig.icons.volume.key, GameConfig.icons.volume.path);
         this.load.image(GameConfig.icons.down.key, GameConfig.icons.down.path);
+        this.load.image('sort-raw',      'assets/icons/sort-raw.svg');
+        this.load.image('sort-alphabet', 'assets/icons/sort-alphabet.svg');
+        this.load.image('sort-random',   'assets/icons/sort-random.svg');
     }
 
     async create() {
@@ -55,15 +57,12 @@ export class StudyWelcomeScene extends Scene {
             }
         }
         else{
-            // 获取关卡信息
-            this.levels = await db.getLevels();
-            const levelNames = this.levels.map(level => level.title);
-            this.createUI(levelNames);
+            await this.createUI();
         }
     }
 
     /**创建UI组件 */
-    private createUI(levelNames: string[]) {
+    private async createUI() {
         // 设置背景图
         this.add.image(0, 0, GameConfig.bgs[0].key)
             .setOrigin(0)
@@ -103,7 +102,18 @@ export class StudyWelcomeScene extends Scene {
         });
 
         // 创建游戏按钮和音量控制
-        this.createGameButtons(levelNames);
+        this.levelDropdown = new DropDownList(this, {
+            x: this.game.canvas.width / 2,
+            y: this.game.canvas.height / 2 - 120,
+            width: 200,
+            height: 60,
+            dropWidth: 300,
+            dropHeight: 500,
+            fontSize: '28px',
+            backgroundColor: 0xff0000,
+        }).onChanged(() => this.sound.play(GameConfig.sounds.click.key));
+        await this.showLevels();
+        this.createGameButtons();
 
         // 创建导入对话框
         this.importDialog = new ImportDialog(this);
@@ -129,36 +139,15 @@ export class StudyWelcomeScene extends Scene {
 
     /**重新获取关卡信息 */
     private async showLevels() {
-        this.levels = await StudyDb.getInstance().getLevels();
-        const levelNames = this.levels.map(level => level.title);
-        this.levelDropdown.setItems(levelNames);
+        var levels = await StudyDb.getInstance().getLevels();
+        this.levelDropdown?.bind(levels, 'levelId', 'title');
+        this.levelDropdown?.setSelectedValue(this.levelId);
     }
 
     /**创建游戏按钮 */
-    private async createGameButtons(levelNames: string[]) {
+    private async createGameButtons() {
         const buttonY = this.game.canvas.height / 2 - 40;
         const buttonSpacing = 80;
-
-        // 等级下拉框
-        const dropdownY = this.game.canvas.height / 2 - 120;
-        this.levelDropdown = new DropDownList(this, {
-            x: this.game.canvas.width / 2,
-            y: dropdownY,
-            width: 200,
-            height: 60,
-            dropWidth: 300,
-            dropHeight: 500,
-            values: levelNames,
-            fontSize: '28px',
-            backgroundColor: 0xff0000,
-            onChange: (index) => {
-                this.levelId = this.levels[index].levelId;
-            }
-        });
-        var index = this.levels.findIndex(level => level.levelId == this.levelId);
-        if(index >= 0){
-            this.levelDropdown.setSelectedIndex(index);
-        }
 
         // 学习按钮
         new Button(this, this.game.canvas.width / 2, buttonY, '学习', {width: 200, height: 60, radius: 30, fontSize: '28px', bgColor: 0x4a90e2})
@@ -174,35 +163,31 @@ export class StudyWelcomeScene extends Scene {
         // 全新开始按钮
         new Button(this, this.game.canvas.width / 2, buttonY + buttonSpacing * 2, '重置', {width: 200, height: 60, radius: 30, fontSize: '28px', bgColor: 0x90be6d})
             .onClick(async () => {
-                const result = await MessageBox.show(this, "确认重置", "该操作将重置所有学习记录，确认继续吗？", true);
+                var result = await MessageBox.show(this, "确认重置", "该操作将重置所有学习记录，确认继续吗？", true);
                 if (result === DialogResult.Ok) {
                     await StudyDb.getInstance().resetDb();
-                    await MessageBox.show(this, "重置成功", "单词库已重新设置，可重新开始学习", false);
+
                     //await new Dialog(this, "单词库已重新设置，可重新开始学习").show();
-                    //window.location.reload();
-                    await this.showLevels();
+                    result = await MessageBox.show(this, "重置成功", "单词库已重新设置，可重新开始学习", false);
+                    if (result == DialogResult.Ok) {
+                        //window.location.reload();
+                        await this.showLevels();
+                    }
                 }
             });
 
         // 导入单词表按钮
         new Button(this, this.game.canvas.width / 2, buttonY + buttonSpacing * 3, '导入', {width: 200, height: 60, radius: 30, fontSize: '28px', bgColor: 0x8e44ad})
-            .onClick(() => this.importDialog.show())
-            ;
+            .onClick(async () => {
+                if (DialogResult.Ok == await new ImportDialog(this).show())
+                    await this.showLevels();
+            })
     }
 
     /**开始游戏 */
     private async startGame(mode: 'all' | 'unlearned' | 'error') {
         this.sound.stopByKey(GameConfig.sounds.bgm.key);
-        var index = this.levelDropdown.getSelectedIndex();
-        if(index >= 0){
-            this.levelId = this.levels[index].levelId;
-        }
-        else{
-            await MessageBox.show(this, "提示", "请选择关卡", false);
-            return;
-        }
-
-        var level = this.levels.filter(level => level.levelId == this.levelId)[0];
+        var level = this.levelDropdown?.getSelectedItem() as Level;
         SceneHelper.goScene(this, 'StudyScene', {level: level, mode: mode, pageId: 0});
     }
 }

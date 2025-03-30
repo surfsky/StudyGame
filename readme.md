@@ -24,19 +24,26 @@ Last Update：2025-03
 
 ## Task
 
+
+
+重置时太快显示消息框，这里异步有问题，数据未能完全重置，需要查一下。
+实现Control基础类，实现setOrigin等方法
+
 优化主场景
-    优化拖拽感应区域，更灵敏一些
+    优化单词worditem
+        /水平靠左对齐，垂直居中对齐，超出换行
+        超出部分被裁减
+        超出部分用省略号表示？
+        按住后自动加宽到文字宽度？
     实现过滤：用tab改造，可显示各种mode
     实现排序：学习界面右上角放置一个“排序”图标按钮，点击后可下拉选择单词排序方式：字母顺序、随机、词根、原序
+    解决模糊问题
     实现TTS：再测试一下文字朗读功能（手机端不行啊），普通html可以，但是放到ts里面不行？
-    自动调整文字大小手机端太小了。考虑点击 worditem 放大，双击可弹出详情框
 
 控件
-    用 Dialog 来重构 ImportDialog
     用 Dialog 来重构 MessageBox
     创建最普通的 TextBox 控件，可以滚动换行。
     优化 DropDownList 控件，支持绑定对象列表数据。
-    剥离 uploader 控件
     实现 Contorl 类的 anchor 属性，随着屏幕resize自动调整位置
 
 
@@ -53,6 +60,15 @@ Last Update：2025-03
 
 ## Done
 
+    /用 Dialog 来重构 ImportDialog
+    /剥离 uploader 控件（fileSelector）
+/优化主场景
+    /修正左右单词一样的问题
+    /优化拖拽感应区域，更灵敏一些
+    /自动调整文字大小手机端太小了。考虑点击 worditem 放大，双击可弹出详情框
+/完全用word类来传递数据
+/双击单词后会弹窗显示单词卡
+/优化重构 StudyDb，创建Db基类，实现基础的 CRUD 泛型方法。
 /fixbug 错词复习场景，无法消除数据
 /剥离 dialog 控件，参考 ImportDialog
 /一首曲子如何控制全局控制播放或关闭。不关就行了

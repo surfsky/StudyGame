@@ -1,4 +1,5 @@
 import * as XLSX from 'xlsx';
+import { Db } from './Db';
 
 export interface Word {
     en: string;
@@ -16,16 +17,14 @@ export interface Level {
     learned: number;
 }
 
-export class StudyDb {
+
+
+export class StudyDb extends Db{
     private static instance: StudyDb;
     private configFile = 'assets/levels/words.xlsx';
     private readonly DB_NAME = 'study_game';
-    private readonly DB_VERSION = 5; // 更新数据库版本以触发结构变更
-    private db: IDBDatabase | null = null;
+    private readonly DB_VERSION = 5; // 若数据库变更请增加此版本号，会触发结构变更方法
     
-
-    private constructor() {}
-
     /**检查数据库是否存在 */
     public async checkDatabaseExists(): Promise<boolean> {
         return new Promise((resolve) => {
@@ -62,11 +61,9 @@ export class StudyDb {
         // 删除数据库
         return new Promise((resolve, reject) => {
             const deleteRequest = indexedDB.deleteDatabase(this.DB_NAME);
-
             deleteRequest.onerror = () => {
                 reject(new Error('删除数据库失败'));
             };
-
             deleteRequest.onsuccess = async () => {
                 try {
                     // 重新初始化数据库并加载数据
@@ -254,116 +251,57 @@ export class StudyDb {
     async getLevels(): Promise<Level[]> {
         if (!this.db) {
             await this.initDatabase(this.configFile);
-            if (!this.db) throw new Error('Database initialization failed');
+            //if (!this.db) throw new Error('Database initialization failed');
         }
-        return new Promise((resolve, reject) => {
-            const transaction = this.db!.transaction('levels', 'readonly');
-            const store = transaction.objectStore('levels');
-            const request = store.getAll();
-
-            request.onsuccess = () => {
-                resolve(request.result);
-            };
-            request.onerror = () => reject(request.error);
-        });
+        return this.getAll<Level>("levels");
     }
 
     /**更新关卡信息 */
     async updateLevel(level: Level): Promise<void> {
-        if (!this.db) throw new Error('Database not initialized');
-        return new Promise((resolve, reject) => {
-            const transaction = this.db!.transaction('levels', 'readwrite');
-            const store = transaction.objectStore('levels');
-            const request = store.put(level);
-
-            request.onsuccess = () => resolve();
-            request.onerror = () => reject(request.error);
-        });
+        return this.put<Level>("levels", level);
     }
 
     //-------------------------------------------------------
     // 单词表操作
     //-------------------------------------------------------
     /**获取某个级别的所有单词 */
-    async getWords(level: number, pageSize: number, pageId: number): Promise<Word[]> {
-        if (!this.db) throw new Error('Database not initialized');
-        return new Promise((resolve, reject) => {
-            const transaction = this.db!.transaction('words', 'readonly');
-            const store = transaction.objectStore('words');
-            const index = store.index('levelId');
-            const request = index.getAll(level);
+    async getLevelWords(level: number): Promise<Word[]> {
+        return this.getAll<Word>("words", level, "levelId");
+    }
 
-            request.onsuccess = () => {
-                const words = request.result.sort((a: Word, b: Word) => 
-                    a.en.localeCompare(b.en));
-                const startIndex = pageId * pageSize;
-                const paginatedWords = words.slice(startIndex, startIndex + pageSize);
-                resolve(paginatedWords);
-            };
-            request.onerror = () => reject(request.error);
-        });
+
+    /**获取某个级别的所有单词 */
+    async getWords(level: number, pageSize: number, pageId: number): Promise<Word[]> {
+        var words = await this.getLevelWords(level);
+        //words = words.sort((a: Word, b: Word) => a.en.localeCompare(b.en));// sort
+        return this.getPageItems(words, pageSize, pageId);
     }
 
     /**获取某个级别的未学习单词 */
     async getUnlearnedWords(level: number, pageSize: number, pageId: number): Promise<Word[]> {
-        if (!this.db) throw new Error('Database not initialized');
-        return new Promise((resolve, reject) => {
-            const transaction = this.db!.transaction('words', 'readonly');
-            const store = transaction.objectStore('words');
-            const index = store.index('levelId');
-            const request = index.getAll(level);
-
-            request.onsuccess = () => {
-                const allWords = request.result.filter((word: Word) => !word.is_learn);
-                const startIndex = pageId * pageSize;
-                const words = allWords.slice(startIndex, startIndex + pageSize);
-                resolve(words);
-            };
-            request.onerror = () => reject(request.error);
-        });
+        var words = await this.getLevelWords(level);
+        words = words.filter((word: Word) => !word.is_learn);
+        return this.getPageItems(words, pageSize, pageId);
     }
 
     /**获取某个级别的错误单词 */
     async getErrorWords(level: number, pageSize: number, pageId: number): Promise<Word[]> {
-        if (!this.db) throw new Error('Database not initialized');
-        return new Promise((resolve, reject) => {
-            const transaction = this.db!.transaction('words', 'readonly');
-            const store = transaction.objectStore('words');
-            const index = store.index('levelId');
-            const request = index.getAll(level);
-
-            request.onsuccess = () => {
-                const allWords = request.result.filter((word: Word) => word.is_error);
-                const startIndex = pageId * pageSize;
-                const words = allWords.slice(startIndex, startIndex + pageSize);
-                resolve(words);
-            };
-            request.onerror = () => reject(request.error);
-        });
+        var words = await this.getLevelWords(level);
+        words = words.filter((word: Word) => word.is_error);
+        return this.getPageItems(words, pageSize, pageId);
     }
 
     /**获取某个级别的总单词数 */
     async getWordCount(level: number, mode: 'all' | 'unlearned' | 'error' | 'learned'): Promise<number> {
-        if (!this.db) throw new Error('Database not initialized');
-        return new Promise((resolve, reject) => {
-            const transaction = this.db!.transaction('words', 'readonly');
-            const store = transaction.objectStore('words');
-            const levelIndex = store.index('levelId');
-            const request = levelIndex.getAll(level);
-
-            request.onsuccess = () => {
-                const words = request.result;
-                let count = 0;
-                switch(mode) {
-                    case 'learned':    count = words.filter(word => word.is_learn).length;  break;
-                    case 'unlearned':  count = words.filter(word => !word.is_learn).length; break;
-                    case 'error':      count = words.filter(word => word.is_error).length;  break;
-                    default:           count = words.length;
-                }
-                resolve(count);
-            };
-            request.onerror = () => reject(request.error);
-        });
+        var words = await this.getLevelWords(level);
+        let count = 0;
+        switch(mode) {
+            case 'learned':    count = words.filter(word => word.is_learn).length;  break;
+            case 'unlearned':  count = words.filter(word => !word.is_learn).length; break;
+            case 'error':      count = words.filter(word => word.is_error).length;  break;
+            default:           count = words.length;
+        }
+        return count;
     }
 
     /**设置某个单词的学习状态 */
@@ -371,25 +309,17 @@ export class StudyDb {
         if (!this.db) throw new Error('Database not initialized');
         return new Promise((resolve, reject) => {
             const transaction = this.db!.transaction(['words', 'levels'], 'readwrite');
-            const wordsStore = transaction.objectStore('words');
+            const wordsStore = transaction.objectStore('words');  // index('levelEn')
 
             // 更新单词状态
-            //wordsStore.index('levelEn').openCursor(IDBKeyRange.only(word.levelId)).onsuccess = (event) => {
-            //    const cursor = (event.target as IDBRequest<IDBCursorWithValue>).result;
-            //    if (cursor) {
-            //        const updatedWord = {...cursor.value, is_learn: b, is_error: cursor.value?.is_error || false };
-            //        cursor.update(updatedWord);
-            //        cursor.continue();
-            //    }
-            //}
-            //const levelIndex = wordsStore.index('levelEn');
             wordsStore.get([word.levelId, word.en]).onsuccess = (event) => {
                 const word = (event.target as IDBRequest<Word>).result;
                 if (word) {
                     const updatedWord = {...word, is_learn: b, is_error: word?.is_error || false };
                     wordsStore.put(updatedWord);
-                    // 更新关卡学习进度
+
                     if (b) {
+                        // 更新关卡学习进度
                         const levelsStore = transaction.objectStore('levels');
                         const levelRequest = levelsStore.get(word.levelId);
                         levelRequest.onsuccess = () => {
@@ -410,9 +340,7 @@ export class StudyDb {
     async setWordError(word: Word, b: boolean): Promise<void> {
         if (!this.db) throw new Error('Database not initialized');
         return new Promise((resolve, reject) => {
-            const transaction = this.db!.transaction('words', 'readwrite');
-            const store = transaction.objectStore('words');
-
+            const store = this.db!.transaction('words', 'readwrite').objectStore('words');
             const request = store.get([word.levelId, word.en]);
             request.onsuccess = () => {
                 const updatedWord = { ...request.result, is_error: b };
@@ -423,5 +351,6 @@ export class StudyDb {
             request.onerror = () => reject(request.error);
         });
     }
+
 
 }

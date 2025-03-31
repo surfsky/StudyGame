@@ -24,10 +24,9 @@ Last Update：2025-03
 
 ## Task
 
-
-
-重置时太快显示消息框，这里异步有问题，数据未能完全重置，需要查一下。
+默认数据插入顺序不可靠，需要增加SortId字段。
 实现Control基础类，实现setOrigin等方法
+重置时太快显示消息框，这里异步有问题，数据未能完全重置，需要查一下。
 
 优化主场景
     优化单词worditem
@@ -60,6 +59,10 @@ Last Update：2025-03
 
 ## Done
 
+/实现学习模式，左右单词对称。
+/实现排序方法 SortType
+/实现 Switcher
+/实现 CheckBox
     /用 Dialog 来重构 ImportDialog
     /剥离 uploader 控件（fileSelector）
 /优化主场景

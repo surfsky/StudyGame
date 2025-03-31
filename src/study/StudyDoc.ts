@@ -1,4 +1,4 @@
-import { StudyDb, Word } from './StudyDb';
+import { SortType, StudyDb, Word } from './StudyDb';
 
 /**
  * 游戏关卡数据和逻辑管理类
@@ -19,7 +19,12 @@ export class StudyDoc {
     onPageComplete?: () => void;
 
     /**初始化关卡数据*/
-    async init(levelId: number, mode: 'all' | 'unlearned' | 'error' = 'all', pageSize: number = 10, pageId:number) {
+    async init(
+        levelId: number, 
+        mode: 'all' | 'unlearned' | 'error' = 'all', 
+        sortType: SortType,
+        pageSize: number = 10, pageId:number
+    ) {
         this.pageSize = pageSize;
         this.levelId = levelId;
         this.matchCount = 0;
@@ -30,13 +35,13 @@ export class StudyDoc {
         const db = await StudyDb.getInstance();
         switch(mode) {
             case 'unlearned':
-                this.pageWords = await db.getUnlearnedWords(levelId, pageSize, pageId);
+                this.pageWords = await db.getUnlearnedWords(levelId, sortType, pageSize, pageId);
                 break;
             case 'error':
-                this.pageWords = await db.getErrorWords(levelId, pageSize, pageId);
+                this.pageWords = await db.getErrorWords(levelId, sortType, pageSize, pageId);
                 break;
             default:
-                this.pageWords = await db.getWords(levelId, pageSize, pageId);
+                this.pageWords = await db.getWords(levelId, sortType, pageSize, pageId);
         }
     }
 
@@ -86,7 +91,7 @@ export class StudyDoc {
     async getStat(): Promise<{learned: number, error: number, total: number}> {
         const db = await StudyDb.getInstance();
         const total = await db.getWordCount(this.levelId, this.mode);
-        const allWords = await db.getWords(this.levelId, total, 0);
+        const allWords = await db.getWords(this.levelId, SortType.Raw, total, 0);
         
         // 统计已学习和错误的单词数
         const learned = allWords.filter(word => word.is_learn === true).length;
@@ -124,9 +129,11 @@ export class StudyDoc {
         }
     }
 
-    /**获取打乱顺序的中文单词列表*/
-    getShuffledCnWords(): Word[] {
-        return [...this.pageWords].sort(() => Math.random() - 0.5);
+    /**获取中文单词列表*/
+    getCnWords(shuffle: boolean): Word[] {
+        if (shuffle)
+            return [...this.pageWords].sort(() => Math.random() - 0.5);
+        return this.pageWords;
     }
 
     /**获取当前匹配的单词*/

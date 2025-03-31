@@ -5,6 +5,7 @@ import { Link } from '../controls/Link';
 import { Rect } from '../controls/Rect';
 import { RectShape } from '../controls/RectShape';
 import { Column } from '../controls/layouts/Column';
+import { CheckBox } from '../controls/forms/CheckBox';
 
 /**测试基础控件场景 */
 export class TestControls extends Phaser.Scene {
@@ -24,7 +25,7 @@ export class TestControls extends Phaser.Scene {
         column.setOrigin(0);
 
         // 创建基础Control示例
-        const control = new Control(this, 0, 0, 200, 100).setOrigin(0, 0);
+        const control = new Control(this, 0, 0, 200, 100);
         control.add(this.add.text(50, 50, 'control-text', {color: '#000'}).setOrigin(0.5));
         column.addChild(control);
 

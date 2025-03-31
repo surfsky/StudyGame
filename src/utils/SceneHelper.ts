@@ -90,11 +90,11 @@ export class SceneHelper {
      * @param {object} data 
      */
     static goScene(currentScene: Phaser.Scene, targetSceneKey: string, data?: object): void {
-        currentScene.cameras.main.fadeOut(this.DURATION);
-        currentScene.time.delayedCall(this.DURATION, () => {
+        //currentScene.cameras.main.fadeOut(this.DURATION);
+        //currentScene.time.delayedCall(this.DURATION, () => {
             currentScene.scene.stop();
             currentScene.scene.start(targetSceneKey, data);
-        });
+        //});
     }
 
 

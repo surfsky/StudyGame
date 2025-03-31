@@ -10,6 +10,7 @@ export interface DropDownListOptions {
     height?: number;
     dropWidth?: number;
     dropHeight?: number;
+    itemHeight?: number;
     items?: any[];
     textField?: string;
     valueField?: string;
@@ -75,8 +76,8 @@ export class DropDownList extends Phaser.GameObjects.Container {
     //-----------------------------------------------------------
     /**Destory */
     public destroy() {
-        this.closeDropdown();
-        this.masker?.destroy();
+        //this.masker?.destroy();
+        //this.dropPanel?.destroy();   // 这两行加进去，scene销毁时会报错
         super.destroy();
     }
 
@@ -111,6 +112,7 @@ export class DropDownList extends Phaser.GameObjects.Container {
             height: options.height || 40,
             dropWidth: options.dropWidth || 200,
             dropHeight: options.dropHeight || 200,
+            itemHeight: options.itemHeight || 40,
             items: options.items || [],
             textField: options.textField || '',
             valueField: options.valueField || '',
@@ -206,7 +208,7 @@ export class DropDownList extends Phaser.GameObjects.Container {
 
         // masker
         // animate icon
-        this.masker?.show();
+        this.masker?.setDepth(this.depth - 1).show();
         this.scene.tweens.add({targets: this.icon, angle: 180, duration: 200, ease: 'Power2'});
 
         // drop panel
@@ -214,16 +216,20 @@ export class DropDownList extends Phaser.GameObjects.Container {
 
         // draw items
         this.items.forEach((item, index) => {
+            var itemHeight = this.options.itemHeight;
             if (this.drawItemUICallback) {
+                // custom draw
                 const itemContainer = this.drawItemUICallback(item, index);
-                itemContainer.setPosition(this.options.dropWidth/2, index * 40 + 25);
-                itemContainer.setInteractive();
+                itemContainer.setPosition(this.options.dropWidth/2, index * itemHeight + 25);
+                itemContainer.setSize(this.options.dropWidth, itemHeight);  // 这个必须有，否则无法触发点击事件
+                itemContainer.setInteractive({ useHandCursor: true });
                 itemContainer.on('pointerdown', () => this.setSelectedIndex(index));
                 this.dropPanel!.add(itemContainer);
             } else {
+                // default draw
                 const itemText = this.scene.add.text(
                     this.options.dropWidth/2,
-                    index * 40 + 25,
+                    index * itemHeight + 25,
                     this.getItemText(item),
                     {
                         fontSize: this.options.fontSize,
@@ -231,6 +237,7 @@ export class DropDownList extends Phaser.GameObjects.Container {
                     }
                 ).setOrigin(0.5);
 
+                itemText.setSize(this.options.dropWidth, itemHeight);  // 这个必须有，否则无法触发点击事件
                 itemText.setInteractive();
                 itemText.on('pointerover', () => {itemText.setColor(this.options.hoverColor);});
                 itemText.on('pointerout',  () => {itemText.setColor(index === this.selectedIndex ? this.options.selectedColor : this.options.textColor);});
@@ -240,15 +247,53 @@ export class DropDownList extends Phaser.GameObjects.Container {
         });
     }
 
-    private createDropPanel() {
-        var ox = this.x - this.options.dropWidth / 2;
-        var oy = this.y + this.options.height / 2 + 2;
-        var contentHeight = this.items.length * 40 + 40;
-        if (contentHeight < this.options.dropHeight) {
-            this.options.dropHeight = contentHeight;
+    /**计算弹出层的最佳位置 */
+    private calculateDropPanelPosition() {
+        const game = this.scene.game;
+        const screenWidth = game.canvas.width;
+        const screenHeight = game.canvas.height;
+        
+        // 计算内容高度
+        const contentHeight = this.items.length * 40 + 40;
+        const dropHeight = Math.min(contentHeight, this.options.dropHeight);
+        
+        // 计算初始位置（默认在控件下方）
+        let x = this.x - this.options.dropWidth / 2;
+        let y = this.y + this.options.height / 2 + 2;
+        
+        // 处理水平方向溢出
+        if (x < 0) {
+            x = 0;
+        } else if (x + this.options.dropWidth > screenWidth) {
+            x = screenWidth - this.options.dropWidth;
         }
-        this.dropPanel = new Panel(this.scene, ox, oy, this.options.dropWidth, this.options.dropHeight, contentHeight, this.options.borderRadius);
+        
+        // 处理垂直方向溢出（如果下方空间不足，则显示在上方）
+        if (y + dropHeight > screenHeight) {
+            y = this.y - this.options.height / 2 - dropHeight - 2;
+        }
+        
+        return { x, y, dropHeight };
+    }
+
+    private createDropPanel() {
+        const { x, y, dropHeight } = this.calculateDropPanelPosition();
+        this.options.dropHeight = dropHeight;
+        
+        // 创建面板并设置初始状态（用于动画）
+        this.dropPanel = new Panel(this.scene, x, y, this.options.dropWidth, this.options.dropHeight, this.options.dropHeight, this.options.borderRadius);
         this.dropPanel.setDepth(this.depth + 1);
+        this.dropPanel.setAlpha(0);
+        this.dropPanel.setScale(1, 0.7);
+        
+        // 添加打开动画
+        this.scene.tweens.add({
+            targets: this.dropPanel,
+            alpha: 1,
+            scaleY: 1,
+            duration: 200,
+            ease: 'Power2'
+        });
     }
 
     protected closeDropdown() {
@@ -256,10 +301,21 @@ export class DropDownList extends Phaser.GameObjects.Container {
         this.isOpen = false;
         this.scene.tweens.add({ targets: this.icon, angle: 0, duration: 200, ease: 'Power2'});
 
-        this.masker?.destroy();
-        this.masker = null;
-        this.dropPanel?.destroy();
-        this.dropPanel = null;
+        // 添加关闭动画
+        if (this.dropPanel) {
+            this.scene.tweens.add({
+                targets: this.dropPanel,
+                alpha: 0,
+                scaleY: 0.7,
+                duration: 200,
+                ease: 'Power2',
+                onComplete: () => {
+                    this.dropPanel?.destroy();
+                    this.dropPanel = null;
+                }
+            });
+        }
+        this.masker?.hide();
     }
 
     //---------------------------------------------------

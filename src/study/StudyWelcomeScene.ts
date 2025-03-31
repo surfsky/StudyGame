@@ -111,7 +111,9 @@ export class StudyWelcomeScene extends Scene {
             dropHeight: 500,
             fontSize: '28px',
             backgroundColor: 0xff0000,
-        }).onChanged(() => this.sound.play(GameConfig.sounds.click.key));
+        }).onChanged(() => this.sound.play(GameConfig.sounds.click.key))
+        .setDepth(GameConfig.depths.ui)
+        ;
         await this.showLevels();
         this.createGameButtons();
 

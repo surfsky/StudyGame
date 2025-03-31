@@ -6,14 +6,18 @@ import { WordItem } from './WordItem';
 import { Level } from './StudyDb';
 import { RectShape } from '../controls/RectShape';
 import { Button } from '../controls/forms/Button';
-import { Word } from './StudyDb';
+import { SortType } from './StudyDb';
 import { DropDownList } from '../controls/forms/DropDownList';
+import { Switcher } from '../controls/forms/Switcher';
 
-/** */
+
+/**
+ * 排序选项接口
+ */
 interface SortOption {
     icon: string;
     text: string;
-    value: string;
+    value: SortType;
 }
 
 /**
@@ -35,6 +39,8 @@ export class StudyScene extends Scene {
     private statText: Phaser.GameObjects.Text | null = null;
 
     private btn!: Button;
+    private ddl!: DropDownList;
+    private switcher!: Switcher;
 
 
     //-----------------------------------------------------
@@ -93,7 +99,6 @@ export class StudyScene extends Scene {
     /**创建场景UI */
     async create() {
         this.createUI();
-        this.line = this.add.graphics().setDepth(GameConfig.depths.bg + 1);
         await this.createWordItems();
         await this.showStat();
         this.setupDragSystem();
@@ -105,12 +110,12 @@ export class StudyScene extends Scene {
     //-----------------------------------------------------
     createSortDropDown() {
         var items: SortOption[] = [
-            { icon: 'sort-raw', text: '原始顺序', value: 'raw' },
-            { icon: 'sort-alphabet', text: '字母顺序', value: 'alphabet' },
-            { icon: 'sort-random', text: '随机顺序', value: 'random' }
+            { icon: 'sort-raw', text: '原始顺序', value: SortType.Raw },
+            { icon: 'sort-alphabet', text: '字母顺序', value: SortType.Alphabet },
+            { icon: 'sort-random', text: '随机顺序', value: SortType.Random }
         ];
-        var ddl = new DropDownList(this, {
-            x: this.game.canvas.width - 100,
+        this.ddl = new DropDownList(this, {
+            x: this.game.canvas.width - 50,
             y: 40,
             width: 40,
             height: 40,
@@ -118,7 +123,7 @@ export class StudyScene extends Scene {
             textColor: '#ffffff',
             backgroundColor: GameConfig.colors.contrast,
         });
-        ddl.setBaseUI((item: SortOption) => {
+        this.ddl.setBaseUI((item: SortOption) => {
             const container = new Phaser.GameObjects.Container(this, 0, 0);
             this.btn = new Button(this, 0, 0, "", {
                 active: false, 
@@ -131,11 +136,11 @@ export class StudyScene extends Scene {
             container.add(this.btn);
             return container;
         });
-        ddl.setBaseUIOnShow((item: SortOption) => {
+        this.ddl.setBaseUIOnShow((item: SortOption) => {
             this.btn.setIcon(item.icon, 1.4);
             //this.btn.setText(item.text);
         });
-        ddl.setItemUI((item: SortOption, index:number) => {
+        this.ddl.setItemUI((item: SortOption, index:number) => {
             const container = new Phaser.GameObjects.Container(this, 0, 0);
             var btn = new Button(this, 0, 0, "", {
                 active: false, 
@@ -149,11 +154,11 @@ export class StudyScene extends Scene {
             container.add(btn);
             return container;
         });
-        ddl.onChanged(async (index:number, item: SortOption)=>{
-            await this.createWordItems(item.value as 'raw' | 'alphabet' | 'random');
+        this.ddl.onChanged(async (index:number, item: SortOption)=>{
+            await this.createWordItems(item.value, !this.switcher.getValue());
         })
-        ddl.bind(items, 'value', 'text');
-        ddl.setDepth(999);
+        this.ddl.bind(items, 'value', 'text');
+        this.ddl.setDepth(999);
     }
 
     private createUI() {
@@ -204,7 +209,7 @@ export class StudyScene extends Scene {
         this.add.text(
             this.game.canvas.width / 2,
             this.game.canvas.height - 30,
-            `请将匹配的中英文词语连接起来`,
+            `请连接匹配的中英文词语`,
             {
                 fontSize: '18px',
                 color: '#ffffff',
@@ -222,6 +227,11 @@ export class StudyScene extends Scene {
             }
         ).setOrigin(0.5);
 
+        // 底部放一个学习开关按钮
+        this.switcher = new Switcher(this, this.game.canvas.width-75, this.game.canvas.height - 60);
+        this.switcher.on('change', (value: boolean) => {
+            this.createWordItems(this.ddl.getSelectedValue(), !this.switcher.getValue());
+        });
     }
 
 
@@ -236,7 +246,7 @@ export class StudyScene extends Scene {
     // 主游戏页面
     //--------------------------------------------
     /**创建左侧的英文单词容器 */
-    private async createWordItems(sortType: 'raw' | 'alphabet' | 'random' = 'raw') {
+    private async createWordItems(sortType: SortType = SortType.Raw, shuffle: boolean=true) {
         // 根据屏幕高度计算每页可显示的单词数量
         const screenHeight = this.game.canvas.height;
         const startY = 150; // 单词起始Y坐标
@@ -248,7 +258,7 @@ export class StudyScene extends Scene {
         const margin = 20; // 左右边距
         const centerGap = Math.max(screenWidth * 0.1, 50); // 中间区域宽度
         const itemWidth = Math.min(Math.max((screenWidth - margin*2 - centerGap)/2, 120), 400); // 根据屏幕宽度计算，但不超过最大值
-        console.log(`StudyScene.createWordItems: 计算页大小=${pageSize}, 页码=${this.pageId}`);
+        console.log(`StudyScene.createWordItems: 排序方式=${sortType}, 页大小=${pageSize}, 页码=${this.pageId}`);
 
         // 清除现有单词项
         this.leftItems.forEach(item => item.destroy());
@@ -257,9 +267,9 @@ export class StudyScene extends Scene {
         this.rightItems = [];
 
         // 初始化关卡数据
-        await this.doc.init(this.levelId, this.mode, pageSize, this.pageId);
+        await this.doc.init(this.levelId, this.mode, sortType, pageSize, this.pageId);
         const enWords = this.doc.getEnWords();
-        const cnWords = this.doc.getShuffledCnWords();
+        const cnWords = this.doc.getCnWords(shuffle);
         console.log(`StudyScene.createWordItems: 获取到英文单词=${enWords.length}, 中文单词=${cnWords.length}`);
         
         // 如果没有单词数据，显示提示信息
@@ -302,6 +312,7 @@ export class StudyScene extends Scene {
             const item = targets[0];  // as WordItem;  // todo: 如何判断 item 是 WordItem 类型？
             if (item instanceof WordItem) {
                 this.startItem = item;
+                this.line = this.add.graphics().setDepth(GameConfig.depths.bg + 1);
 
                 // 按下时开始记录起始点并创建线段对象
                 const bounds = item.getBounds(); 
@@ -353,6 +364,7 @@ export class StudyScene extends Scene {
                 }
 
                 // 清除线段对象
+                //this.line.setVisible(false);
                 this.line.destroy();
                 this.line = null;
                 this.startItem = null;

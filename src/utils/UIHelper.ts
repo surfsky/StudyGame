@@ -144,17 +144,4 @@ export class UIHelper{
             ease: 'Sine.easeInOut'
         });
     }
-
-    /**创建一个圆角矩形*/
-    static createRoundRect(scene:Phaser.Scene, x:number, y:number, w:number, h:number, radius:number, bgColor:number, bgAlpha=1, borderColor=-1, borderWidth=1, borderAlpha=1) : Phaser.GameObjects.Graphics{
-        const graphics = scene.add.graphics();
-        graphics.fillStyle(bgColor, bgAlpha);
-        graphics.fillRoundedRect(x, y, w, h, radius);
-        if (borderColor != -1){
-            graphics.lineStyle(borderWidth, borderColor, borderAlpha);
-            graphics.strokeRoundedRect(x, y, w, h, radius);
-        }
-        return graphics;
-    }
-
 }

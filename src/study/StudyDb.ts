@@ -17,6 +17,15 @@ export interface Level {
     learned: number;
 }
 
+/**
+ * 排序类型枚举
+ */
+export enum SortType {
+    Raw = 'raw',
+    Alphabet = 'alphabet',
+    Random = 'random'
+}
+
 
 
 export class StudyDb extends Db{
@@ -269,26 +278,31 @@ export class StudyDb extends Db{
         return this.getAll<Word>("words", level, "levelId");
     }
 
-
-    /**获取某个级别的所有单词 */
-    async getWords(level: number, pageSize: number, pageId: number): Promise<Word[]> {
-        var words = await this.getLevelWords(level);
-        //words = words.sort((a: Word, b: Word) => a.en.localeCompare(b.en));// sort
+    /**获取单词某分页数据 */
+    private getPageWords(words: Word[], sortType: SortType, pageSize: number, pageId: number) {
+        if (sortType === SortType.Alphabet) words = words.sort((a: Word, b: Word) => a.en.localeCompare(b.en));
+        if (sortType === SortType.Random) words = words.sort(() => Math.random() - 0.5);
         return this.getPageItems(words, pageSize, pageId);
+    }
+
+   /**获取某个级别的所有单词 */
+    async getWords(level: number, sortType: SortType, pageSize: number, pageId: number): Promise<Word[]> {
+        var words = await this.getLevelWords(level);
+        return this.getPageWords(words, sortType, pageSize, pageId);
     }
 
     /**获取某个级别的未学习单词 */
-    async getUnlearnedWords(level: number, pageSize: number, pageId: number): Promise<Word[]> {
+    async getUnlearnedWords(level: number, sortType: SortType, pageSize: number, pageId: number): Promise<Word[]> {
         var words = await this.getLevelWords(level);
         words = words.filter((word: Word) => !word.is_learn);
-        return this.getPageItems(words, pageSize, pageId);
+        return this.getPageWords(words, sortType, pageSize, pageId);
     }
 
     /**获取某个级别的错误单词 */
-    async getErrorWords(level: number, pageSize: number, pageId: number): Promise<Word[]> {
+    async getErrorWords(level: number, sortType: SortType, pageSize: number, pageId: number): Promise<Word[]> {
         var words = await this.getLevelWords(level);
         words = words.filter((word: Word) => word.is_error);
-        return this.getPageItems(words, pageSize, pageId);
+        return this.getPageWords(words, sortType, pageSize, pageId);
     }
 
     /**获取某个级别的总单词数 */

@@ -8,6 +8,7 @@ import { TestButton } from './TestButton';
 import { TestTTS } from './TestTTS';
 import { TestExcel } from './TestExcel';
 import { TestControls } from './TestControls';
+import { TestFormBasic } from './TestFormBasic';
 
 /**测试场景列表 */
 export class Index extends Phaser.Scene {
@@ -38,6 +39,7 @@ export class Index extends Phaser.Scene {
             { key: 'TestTTS', title: 'TTS' },
             { key: 'TestExcel', title: 'Excel导入' },
             { key: 'TestControls', title: 'Controls' },
+            { key: 'TestFormBasic', title: '基本表单控件' },
         ];
 
         // 创建场景按钮
@@ -66,7 +68,7 @@ const config = {
         height: '100%',
         autoCenter: Phaser.Scale.CENTER_BOTH
     },
-    scene: [Index, TestBlock, TestLayout, TestForm, TestButton, TestTTS, TestExcel, MessageBox, TestControls],
+    scene: [Index, TestBlock, TestLayout, TestForm, TestButton, TestTTS, TestExcel, MessageBox, TestControls, TestFormBasic],
     backgroundColor: '#ffffff'
 };
 

@@ -3,11 +3,12 @@ import { Button } from '../controls/forms/Button';
 import { GameButton } from '../controls/forms/GameButton';
 import { TestBlock } from './TestBlock';
 import { MessageBox } from '../controls/overlays/MessageBox';
+import { TestScene } from './TestScene';
 
 /**测试表单控件场景 */
-export class TestTTS extends Phaser.Scene {
+export class TestTTS extends TestScene {
     constructor() {
-        super({ key: 'TestTTS' });
+        super('TestTTS');
     }
 
     preload() {
@@ -17,6 +18,9 @@ export class TestTTS extends Phaser.Scene {
     }
 
     create() {
+        this.createTitle("TTS");
+
+
         var speaker = window.speechSynthesis;
         var centerX = this.cameras.main.centerX;
         var centerY = this.cameras.main.centerY;

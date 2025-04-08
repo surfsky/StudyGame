@@ -2,10 +2,11 @@ import 'phaser';
 import { Row } from '../controls/layouts/Row';
 import { Grid } from '../controls/layouts/Grid';
 import { Column } from '../controls/layouts/Column';
+import { TestScene } from './TestScene';
 
-export class TestLayout extends Phaser.Scene {
+export class TestLayout extends TestScene {
     constructor() {
-        super({ key: 'TestLayout' });
+        super('TestLayout');
     }
 
     preload() {
@@ -14,6 +15,8 @@ export class TestLayout extends Phaser.Scene {
     }
 
     create() {
+        this.createTitle("Layout");
+        
         // 设置背景
         //this.add.image(400, 300, 'sky');
 
@@ -33,7 +36,7 @@ export class TestLayout extends Phaser.Scene {
         var centerX = this.cameras.main.width / 2;
 
         // 创建一个Row容器，设置固定宽度和autoWrap
-        const row = new Row(this, 10, 10, w-20, 200, 5, true);
+        const row = new Row(this, 10, 100, w-20, 200, 5, true);
         row.setOrigin(0, 0);
         row.setFillStyle(0x00ff00, 0.5);
 
@@ -62,7 +65,7 @@ export class TestLayout extends Phaser.Scene {
 
     private testGrid() {
         // 创建一个Grid容器
-        const grid = new Grid(this, 200, 200, {
+        const grid = new Grid(this, 200, 300, {
             columnCount: 3,
             cellWidth: 50,
             cellHeight: 50,

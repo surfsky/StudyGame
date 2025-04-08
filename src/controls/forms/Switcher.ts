@@ -43,16 +43,13 @@ export class Switcher extends Control {
         // 计算目标位置和颜色
         const thumbSize = this.height - 4;
         const targetX = this.isOn ? this.width - thumbSize - 2 : 2;
-        const targetColor = this.isOn ? 0x34c759 : 0xe5e5ea;
-        const currentColor = !this.isOn ? 0x34c759 : 0xe5e5ea;
+        //const targetColor = this.isOn ? 0x34c759 : 0xe5e5ea;
+        //const currentColor = !this.isOn ? 0x34c759 : 0xe5e5ea;
+        const targetColor  = this.isOn  ? this.mainColor : this.theme.border.color;
+        const currentColor = !this.isOn ? this.mainColor : this.theme.border.color;
 
         // 创建滑块移动动画
-        this.scene.tweens.add({
-            targets: this.thumb,
-            x: targetX,
-            duration: 200,
-            ease: 'Power2'
-        });
+        this.scene.tweens.add({targets: this.thumb, x: targetX, duration: 200, ease: 'Power2'});
 
         // 创建背景色渐变动画
         let progress = 0;
@@ -84,7 +81,7 @@ export class Switcher extends Control {
         this.thumb.clear();
 
         // 绘制轨道
-        const trackColor = this.isOn ? 0x34c759 : 0xe5e5ea;
+        const trackColor = this.isOn ? this.mainColor : this.theme.border.color; //0x34c759 : 0xe5e5ea;
         const trackRadius = this.height / 2;
         Painter.drawRoundRect(this.track, 0, 0, this.width, this.height, trackRadius, trackColor);
 

@@ -1,23 +1,32 @@
-import Phaser from 'phaser';
+import Phaser, { Game } from 'phaser';
 import { Button } from '../controls/forms/Button';
+import { DropDownList } from '../controls/forms/DropDownList';
+import { ThemeManager } from '../controls/Theme';
+import { GameConfig } from '../GameConfig';
+import { Label } from '../controls/basic/Label';
+import { Switcher } from '../controls/forms/Switcher';
+import { Toast } from '../controls/overlays/Toast';
 
 /**测试基础控件场景 */
 export class TestScene extends Phaser.Scene {
-    constructor(key: string) {
-        super({ key: key });
+    constructor(config?: string | Phaser.Types.Scenes.SettingsConfig) {
+        super(config);
     }
 
     preload() {
-        this.load.image('icon-back', 'assets/icons/left.svg');
+        this.load.image(GameConfig.icons.back.key, GameConfig.icons.back.key);
+        this.load.image(GameConfig.icons.down.key, GameConfig.icons.down.path);
+        this.load.image(GameConfig.icons.close.key, GameConfig.icons.close.path);
     }
 
     create() {
         this.createTitle('Control 示例');
     }
 
+    /**Create title items */
     public createTitle(title: string) {
-        const centerX = this.cameras.main.centerX;
-        this.add.text(centerX, 50, title, { fontSize: '32px', color: '#000' }).setOrigin(0.5);
+        //this.add.text(100, 20, title, { fontSize: '32px', color: '#000' }).setOrigin(0);
+        new Label(this, 100, 20, title, 'h1');
 
         // 添加返回按钮
         const backButton = new Button(this, 30, 30, '', {
@@ -26,7 +35,40 @@ export class TestScene extends Phaser.Scene {
             radius: 20,
             bgColor: 0x2ecc71,
         });
-        backButton.setIcon('icon-back');
+        backButton.setIcon(GameConfig.icons.back.key, 1.4);
         backButton.on('click', () => { this.scene.start('TestIndex'); });
+
+
+        // 添加主题选择下拉框
+        const ddlTheme = new DropDownList(this, {
+            x: this.cameras.main.width - 170,
+            y: 30,
+            width: 160,
+            height: 34,
+            items: ['Light', 'Dark', 'Green', 'Purple', 'DarkBlue'],
+            borderRadius: 17,
+        }); //.setDepth(1);
+        ddlTheme.onChanged((index: number) => {
+            switch(index) {
+                case 0: ThemeManager.setTheme(this, ThemeManager.themeLight); break;
+                case 1: ThemeManager.setTheme(this, ThemeManager.themeDark); break;
+                case 2: ThemeManager.setTheme(this, ThemeManager.themeGreen); break;
+                case 3: ThemeManager.setTheme(this, ThemeManager.themePurple); break;
+                case 4: ThemeManager.setTheme(this, ThemeManager.themeDarkBlue); break;
+            }
+        });
+
+        // 添加边框显示切换开关
+        const borderSwitcher = new Switcher(this, this.cameras.main.width - 60, 20);
+        borderSwitcher.setValue(false);
+        borderSwitcher.on('change', (value: boolean) => {
+            // 遍历场景中的所有游戏对象
+            this.children.list.forEach((child: any) => {
+                if (child.showBounds) {
+                    child.showBounds(value);
+                }
+            });
+            new Toast(this, value? '显示边框' : '隐藏边框').setDepth(99999).show();
+        });
     }
 }

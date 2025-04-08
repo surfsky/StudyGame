@@ -1,11 +1,19 @@
 import Phaser from 'phaser';
+import { Control } from '../Control';
 
 /**定制的游戏按钮控件，可响应点按长按等逻辑 */
-export class GameButton extends Phaser.GameObjects.Container {
-    private graphics: Phaser.GameObjects.Graphics;
+export class GameButton extends Control { //} Phaser.GameObjects.Container {
+    //private graphics: Phaser.GameObjects.Graphics;
     private label?: Phaser.GameObjects.Text;
     private icon?: Phaser.GameObjects.Image;
     private pressTime?: Date;
+    private options: {
+        fillColor: number,
+        borderColor: number,
+        borderWidth: number,
+        borderRadius: number,
+        isIcon?: boolean
+    };
 
     /**创建文本按钮 */
     constructor(
@@ -14,15 +22,11 @@ export class GameButton extends Phaser.GameObjects.Container {
         options: { fillColor: number, borderColor: number, borderWidth: number, borderRadius: number, isIcon?: boolean }
     ) {
         super(scene, x, y);
-        this.width = width;
-        this.height = height;
+        this.setSize(width, height);
+        this.options = options;
 
         // 创建背景
-        this.graphics = scene.add.graphics();
-        this.graphics.fillStyle(options.fillColor, 1);
-        this.graphics.lineStyle(options.borderWidth, options.borderColor, 1);
-        this.graphics.fillRoundedRect(0, 0, width, height, options.borderRadius);
-        this.graphics.strokeRoundedRect(0, 0, width, height, options.borderRadius);  // todo: 如何绘制在内部
+        this.draw();
 
         // 根据isIcon选项创建文本或图标
         if (options.isIcon) {
@@ -30,19 +34,22 @@ export class GameButton extends Phaser.GameObjects.Container {
             this.icon = scene.add.image(width / 2, height / 2, textOrIconKey)
                 .setOrigin(0.5)
                 .setDisplaySize(width * 0.6, height * 0.6);
-            this.add(this.graphics);
             this.add(this.icon);
         } else {
             // 创建文本
             this.label = scene.add.text(width / 2, height / 2, textOrIconKey, { fontSize: '24px', color: '#FFF' });
             this.label.setOrigin(0.5);
-            this.add(this.graphics);
             this.add(this.label);
         }
-        this.setSize(width, height);  // 增加点击判定区域
+    }
 
-        // 添加到场景
-        scene.add.existing(this);
+    /**draw */
+    override draw() {
+        super.draw();
+        this.graphics.fillStyle(this.options.fillColor, 1);
+        this.graphics.lineStyle(this.options.borderWidth, this.options.borderColor, 1);
+        this.graphics.fillRoundedRect(0, 0, this.width, this.height, this.options.borderRadius);
+        this.graphics.strokeRoundedRect(0, 0, this.width, this.height, this.options.borderRadius);
     }
 
     /**Set interractive */

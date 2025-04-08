@@ -2,11 +2,12 @@ import Phaser from 'phaser';
 import { Button } from '../controls/forms/Button';
 import { GameButton } from '../controls/forms/GameButton';
 import { TestBlock } from './TestBlock';
+import { TestScene } from './TestScene';
 
 /**测试表单控件场景 */
-export class TestButton extends Phaser.Scene {
+export class TestButton extends TestScene {
     constructor() {
-        super({ key: 'TestButton' });
+        super('TestButton');
     }
 
     preload() {
@@ -16,17 +17,7 @@ export class TestButton extends Phaser.Scene {
     }
 
     create() {
-        // 添加返回按钮
-        const backButton = new Button(this, 30, 30, '', {
-            width: 40,
-            height: 40,
-            radius: 20,
-            bgColor: 0x2ecc71,
-        });
-        backButton.setIcon('icon-back');
-        backButton.on('click', () => {
-            this.scene.start('TestIndex');
-        });
+        this.createTitle("Button");
 
         // 基础按钮测试
         const basicButton = new Button(this, 120, 100, '基础按钮');

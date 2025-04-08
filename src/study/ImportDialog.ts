@@ -3,8 +3,8 @@ import { Button } from '../controls/forms/Button';
 import { Loading } from '../controls/overlays/Loading';
 import { MessageBox } from '../controls/overlays/MessageBox';
 import { StudyDb } from './StudyDb';
-import { Link } from '../controls/Link';
-import { FileSelector } from '../controls/FileSelector';
+import { Link } from '../controls/basic/Link';
+import { FileSelector } from '../controls/forms/FileSelector';
 import { DialogResult } from '../controls/overlays/DialogResult';
 import { Dialog } from '../controls/overlays/Dialog';
 
@@ -31,11 +31,11 @@ export class ImportDialog extends Dialog {
 
         // 创建下载模板链接
         var linkUrl = '/assets/levels/template.xlsx';
-        var link = new Link(this.scene, this.width / 2, 140, '下载模版', linkUrl, '模版.xlsx', '14px', '#2980b9').setOrigin(0.5);
+        var link = new Link(this.scene, this.width / 2 - 40, 140, '下载模版', linkUrl, '模版.xlsx');
         this.add(link);
 
         // 创建选择文件按钮
-        var filer = new FileSelector(this.scene, this.width / 2, 180, '选择文件', '.xlsx,.xls', {
+        var filer = new FileSelector(this.scene, this.width / 2, 240, '选择文件', '.xlsx,.xls', {
             width: 200,
             height: 40,
             bgColor: 0x2ecc71

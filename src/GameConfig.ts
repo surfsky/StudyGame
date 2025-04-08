@@ -30,7 +30,8 @@ export const GameConfig = {
         rotate: { key: 'rotate', path: 'assets/icons/rotate.svg' },
         drop: { key: 'drop', path: 'assets/icons/drop.svg' },
         volume: { key: 'volume', path: 'assets/icons/volume.svg' },
-        down: { key: 'down', path: 'assets/icons/down.svg' }
+        down: { key: 'down', path: 'assets/icons/down.svg' },
+        close: { key: 'close', path: 'assets/icons/close.svg' }
     },
     fonts: {
         default: '"仿宋", "SF Pro SC", "SF Pro Text", "SF Pro Icons", "PingFang SC", "Helvetica Neue", "Helvetica", "Arial", sans-serif',

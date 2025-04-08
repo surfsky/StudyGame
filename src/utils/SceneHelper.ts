@@ -5,6 +5,16 @@ export class SceneHelper {
     static DURATION: number = 500;  // 过渡动画持续时间
 
     /**
+     * 设置背景颜色
+     * @param {Phaser.Scene} scene - 场景实例
+     * @param {number} color - 颜色值
+     */
+    public static setBgColor(scene: Phaser.Scene, color: number): void {
+        scene.cameras.main.setBackgroundColor(color);
+    }
+
+
+    /**
      * 创建加载进度UI
      * @param {Phaser.Scene} scene - 场景实例
      */

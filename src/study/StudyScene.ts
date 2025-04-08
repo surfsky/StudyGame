@@ -94,6 +94,10 @@ export class StudyScene extends Scene {
         this.load.audio(GameConfig.sounds.bgm.key,     GameConfig.sounds.bgm.path);
         // 加载背景图片
         this.load.image('bg', GameConfig.bgs[0].path);
+        this.load.image('sort-raw',      'assets/icons/sort-raw.svg');
+        this.load.image('sort-alphabet', 'assets/icons/sort-alphabet.svg');
+        this.load.image('sort-random',   'assets/icons/sort-random.svg');
+        this.load.image('sort-root',   'assets/icons/sort-root.svg');
     }
 
     /**创建场景UI */
@@ -112,10 +116,11 @@ export class StudyScene extends Scene {
         var items: SortOption[] = [
             { icon: 'sort-raw', text: '原始顺序', value: SortType.Raw },
             { icon: 'sort-alphabet', text: '字母顺序', value: SortType.Alphabet },
-            { icon: 'sort-random', text: '随机顺序', value: SortType.Random }
+            { icon: 'sort-random', text: '随机顺序', value: SortType.Random },
+            { icon: 'sort-root', text: '词根顺序', value: SortType.Root }
         ];
         this.ddl = new DropDownList(this, {
-            x: this.game.canvas.width - 50,
+            x: this.game.canvas.width - 42,
             y: 40,
             width: 40,
             height: 40,
@@ -228,7 +233,7 @@ export class StudyScene extends Scene {
         ).setOrigin(0.5);
 
         // 底部放一个学习开关按钮
-        this.switcher = new Switcher(this, this.game.canvas.width-75, this.game.canvas.height - 60);
+        this.switcher = new Switcher(this, this.game.canvas.width-72, this.game.canvas.height - 60);
         this.switcher.on('change', (value: boolean) => {
             this.createWordItems(this.ddl.getSelectedValue(), !this.switcher.getValue());
         });

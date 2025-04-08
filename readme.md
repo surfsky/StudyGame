@@ -11,7 +11,7 @@ Last Update：2025-03
 
 ## 功能
 
-- 创建一个手机竖屏版本的学习游戏。
+- 手机竖屏版本的单词学习游戏。
 - 用户群体为儿童，界面和声效都要有趣一些。
 - 欢迎场景显示背景图片、游戏标题，显示“关卡选择”、“开始”、“错题复习”、“重置”按钮。
 - 主游戏场景
@@ -21,12 +21,100 @@ Last Update：2025-03
   - 右侧中文顺序是打乱的。
   - 按住左侧单词，可连线拖动到右侧中文，若匹配成功则闪烁并消除这一对中英文词汇（并播放消除声效），若连线错误则播放嘟嘟声音。
   - 该关卡单词全部匹配成功后，播放音乐，继续下一关。
+- 特点
+  - 每个单词都有以下属性：ID、英文、中文、词根、音标、主题
+  - 关卡数据从excel导入，可自定义关卡。
+  - 主游戏场景有：学习模式、游戏模式、错题复习模式。
+    - 学习模式：左右单词对称，用户可通过拖拽连线的方式来匹配单词。
+    - 游戏模式：左右单词不对称，用户可通过拖拽连线的方式来匹配单词。
+    - 错题复习模式：用户可通过拖拽连线的方式来匹配单词，匹配成功后会被消除。
+  - 单词的排序方式有：字母顺序、随机、词根、原序。更方便批量主题方式背诵。
+  - 单词卡详细信息从 AI 获取（英文、中文、音标、词根、词性、例句、翻译、图片、音频）
+
+## 附属UI库
+
+基础能力
+    支持样式
+    支持动画
+    支持单向数据绑定
+    用事件剥离界面和逻辑（为实现设计器做准备，显示外框、禁止所有事件，可拖拽放置）
+
+- base
+    [*] control: theme, draw, bounds
+    [*] panel: scroll panel
+    [*] rect
+    [*] label
+    [*] image
+    [ ] pager(....)
+- overlay
+    [*] popup: modal, 
+    [*] dialog
+    [*] mask
+    [ ] sliderview
+    [ ] toast
+- layout：
+    [*] row
+    [*] column
+    [*] grid
+- form：
+    [*] button
+    [*] GameButton
+    [ ] ImageButton
+    [*] GroupButton
+    [ ] slider
+    [ ] progressbar
+    [*] link
+    [*] fileSelector
+    [*] switch
+    [*] checkbox
+    [*] radiobox
+    [*] dropdownlist
+    [ ] ListBox
+    [*] Textbox (全部由PhaserJs实现有困难（输入法、换行、光标、滚动等），内置一个html input，用样式控制)
+    [ ] Combobox = textbox + listbox
+    [ ] Calendar
+    [ ] DatePicker
+    [ ] TimePicker
+- data
+    [ ] GridView
+    [ ] CheckListBox
+    [ ] Tree
+- app
+    [ ] View（全屏），可左右滑动
+    [ ] AppBar
+    [ ] ListView
+    [ ] actionsheet
+
+
+控件Task
+    实现 View/ViewManager
+    实现图片双指缩放功能
+    优化 Button 的 bounders
+    测试优化layout控件
+    响应式布局
+    TextBox 多行控件可以滚动换行。
+    优化面板
+        实现拖拽面板移动
+        实现面板调整大小能力
+    实现组合控件
+        实现listview，可用于替代 Dropdownlist 的下拉面板部分。
+        实现树控件treeview
+        实现下拉控件，可下拉任何东西
+        实现日历控件
+    优化 Control 基类
+        实现Control基础类setOrigin相关逻辑（容后容后，或者改用Rectangle+Container方式实现，接口先不变）
+        实现 Contorl 类的 anchor 属性，随着屏幕resize自动调整位置
+    用 Popup、Dialog 来重构 MessageBox
+    实现界面设计器
+
 
 ## Task
 
-默认数据插入顺序不可靠，需要增加SortId字段。
-实现Control基础类，实现setOrigin等方法
-重置时太快显示消息框，这里异步有问题，数据未能完全重置，需要查一下。
+***测试文字朗读功能（手机端仅浙政钉可以，是不是浏览器或哪里有设置可以开启），普通html可以，但是放到ts里面不行？
+增加单词Scope（如动物、植物、食物、颜色、数字、时间、地点、人物、交通工具等），这个比较固定，以json对象就好
+    每个单词课归属于多个主题
+    可根据主题过滤单词
+fixbug：重置时太快显示消息框，这里异步有问题，数据未能完全重置，需要查一下。
 
 优化主场景
     优化单词worditem
@@ -37,28 +125,30 @@ Last Update：2025-03
     实现过滤：用tab改造，可显示各种mode
     实现排序：学习界面右上角放置一个“排序”图标按钮，点击后可下拉选择单词排序方式：字母顺序、随机、词根、原序
     解决模糊问题
-    实现TTS：再测试一下文字朗读功能（手机端不行啊），普通html可以，但是放到ts里面不行？
-
-控件
-    用 Dialog 来重构 MessageBox
-    创建最普通的 TextBox 控件，可以滚动换行。
-    优化 DropDownList 控件，支持绑定对象列表数据。
-    实现 Contorl 类的 anchor 属性，随着屏幕resize自动调整位置
 
 
 换一个温柔的背景音乐
 错题复习，弄对三次后消除。
-
-
-实现和剥离控件库：
-    overlay：popup、dialog、view（全屏）、mask、scrollview、
-    layout：row、column、grid
-    form：button、link、fileSelector、label、switch、image、textbox、radio、checkbox、combobox....
-    按照windows form的方式设计api，用事件剥离界面和逻辑、支持绑定数据、支持动画、支持事件、支持样式
+修正Button的边框，修改button让其基于左上角坐标进行定位
 
 
 ## Done
 
+/实现 Img 控件，可异步加载图片
+/实现 GroupButton 控件
+/实现panel的惯性滑动功能。
+/完善 Style
+    /实现scene的背景色
+    /修正checkbox、radiobox的文本样式
+/实现 Popup 拖动
+/实现 Toast 控件
+/默认数据插入顺序不可靠，需要设置Id自增字段，插入数据时自动生成。
+/实现词根方式排序
+        /按照windows form的方式设计api，用事件剥离界面和逻辑、支持绑定数据、支持动画、支持事件、支持样式
+        /实现绘制control外框
+/实现控件样式
+    /TestControl 页面绘制一条基准线，用于测试偏移和Origin
+    /优化 DropDownList 控件，支持绑定对象列表数据。
 /实现学习模式，左右单词对称。
 /实现排序方法 SortType
 /实现 Switcher

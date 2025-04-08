@@ -25,3 +25,97 @@
 
     protected ox: number = 0;
     protected oy: number = 0;
+
+    primaryColor       = 0x007bff;
+    secondaryColor     = 0x7633d4;
+    successColor       = 0x28a745;
+    infoColor          = 0x17a2b8;
+    warnColor          = 0xffc107;
+    dangerColor        = 0xdc3545;
+
+    // background
+    bgColor            = 0xffffff;
+    bgDarkColor        = 0x343a40;
+    bgLightColor       = 0xf8f9fa;
+    borderColor        = 0xcdcdcd;
+    borderWidth        = 1;
+    borderRadius       = 8;
+
+
+    /**
+     * Set theme for background and text color. Other settings will be setted in child class.
+     */
+    static setBaseTheme(ele: any, themeCls: string | null = null){
+        if (themeCls == null && ele.themeCls != null)
+            themeCls = ele.themeCls;
+        if (themeCls == null)
+            return;
+
+        var t = ThemeManager.current;
+        switch (themeCls){
+            case "bg":        ele.fillColor = t.color.bg;          break;
+            case "primary":   ele.fillColor = t.color.primary;     break;
+            case "secondary": ele.fillColor = t.color.secondary;   break;
+            case "success":   ele.fillColor = t.color.success;     break;
+            case "info":      ele.fillColor = t.color.info;        break;
+            case "warning":   ele.fillColor = t.color.warning;     break;
+            case "danger":    ele.fillColor = t.color.danger;      break;
+            default:          ele.fillColor = t.color.bg;          break;
+        }
+        return ele;
+    }
+
+    /**
+     * 设置按钮样式
+     * @param options 样式选项
+     */
+    public setStyle(options: Partial<ButtonOptions>): this {
+        this.options = { ...this.options, ...options };
+        this.draw();
+        if (this.label) {
+            this.label.setStyle({
+                fontSize: this.options.fontSize,
+                color: this.options.textColor
+            });
+        }
+        if (this.icon) {
+            this.icon.setScale(this.options.iconScale!);
+        }
+        this.updateLayout();
+        return this;
+    }
+
+    private updateToastPositions() {
+        let currentY = Toast.MARGIN_TOP;
+        Toast.activeToasts = Toast.activeToasts.filter(toast => toast && toast.scene !== null);
+        Toast.activeToasts.forEach(toast => {
+            const targetY = currentY;
+            if (toast.tween && !toast.tween.hasStarted) {
+                toast.tween.stop();
+                toast.tween = null;
+            }
+            if (!toast.tween) {
+                toast.tween = this.scene.add.tween({
+                    targets: toast,
+                    y: targetY,
+                    duration: 200,
+                    ease: 'Power2'
+                });
+            } else {
+                toast.tween.updateTo('y', targetY, true);
+            }
+            currentY += toast.height + Toast.MARGIN_BETWEEN;
+        });
+    }
+
+
+    /**
+     * 设置缩放比例
+     */
+    public setScale(value: number) : Img {
+        this.options.scale = value;
+        if (this.image) {
+            this.image.setScale(value);
+        }
+        return this;
+    }

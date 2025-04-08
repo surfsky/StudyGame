@@ -1,6 +1,7 @@
 import { Scene } from 'phaser';
+import { TestScene } from './TestScene';
 
-export class TestBlock extends Scene {
+export class TestBlock extends TestScene {
     private cntX = 20;
     private cntY = 40;
     private blockSize: number = 20;
@@ -10,10 +11,11 @@ export class TestBlock extends Scene {
     private graphics!: Phaser.GameObjects.Graphics;
 
     constructor() {
-        super({ key: 'TestBlock' });
+        super('TestBlock');
     }
 
     create() {
+        this.createTitle("Block");
         this.graphics = this.add.graphics();
         console.log('TestScene创建完成，初始方块位置:', { x: this.blockX, y: this.blockY });
         this.drawGame();

@@ -2,6 +2,7 @@ import { Scene } from 'phaser';
 import { GameConfig } from '../../GameConfig';
 import { Panel } from '../Panel';
 import { Mask } from '../overlays/Mask';
+import { Control } from '../Control';
 
 export interface DropDownListOptions {
     x: number;
@@ -28,7 +29,7 @@ export interface DropDownListOptions {
  * @todo
  * - 将masker、droppanel也纳入容器，简化销毁工作？
  */
-export class DropDownList extends Phaser.GameObjects.Container {
+export class DropDownList extends Control {
     protected bg! : Phaser.GameObjects.Graphics;
     protected selectedText!: Phaser.GameObjects.Text;
     protected dropPanel: Phaser.GameObjects.Container | null = null;
@@ -102,8 +103,7 @@ export class DropDownList extends Phaser.GameObjects.Container {
 
     /**Constructor */
     constructor(scene: Scene, options: DropDownListOptions) {
-        super(scene, options.x, options.y);
-        scene.add.existing(this);
+        super(scene, options.x, options.y, options.width || 200, options.height || 40);
 
         this.options = {
             x: options.x,
@@ -129,8 +129,6 @@ export class DropDownList extends Phaser.GameObjects.Container {
         }
         this.items = this.options.items;
         this.setSize(this.options.width, this.options.height);
-
-        // 交互
         this.setInteractive({ useHandCursor: true });
         this.on('pointerdown', (pointer: Phaser.Input.Pointer, localX: number, localY: number, event: Phaser.Types.Input.EventData) => {
             event.stopPropagation();
@@ -142,9 +140,7 @@ export class DropDownList extends Phaser.GameObjects.Container {
         });
 
         // draw
-        this.drawBg();
-        this.drawArrowIcon();
-        this.showBaseUI();
+        this.draw();
 
         // popup masker
         this.masker = new Mask(this.scene).setVisible(false);
@@ -154,17 +150,23 @@ export class DropDownList extends Phaser.GameObjects.Container {
     }
 
 
-    private drawBg() {
-        this.bg = this.scene.add.graphics();
-        this.bg.fillStyle(this.options.backgroundColor, 1);
-        this.bg.fillRoundedRect(
+    protected override draw() {
+        super.draw();
+        this.dropBg();
+        this.drawArrowIcon();
+        this.showBaseUI();
+    }
+
+    private dropBg() {
+        this.graphics.clear();
+        this.graphics.fillStyle(this.options.backgroundColor, 1);
+        this.graphics.fillRoundedRect(
             -this.options.width / 2,
             -this.options.height / 2,
             this.options.width,
             this.options.height,
             this.options.borderRadius
         );
-        this.add(this.bg);
     }
 
     private drawArrowIcon() {

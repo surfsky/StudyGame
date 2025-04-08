@@ -3,13 +3,14 @@ import { Button } from '../controls/forms/Button';
 import { Panel } from '../controls/Panel';
 import * as XLSX from 'xlsx';
 import { Loading } from '../controls/overlays/Loading';
+import { TestScene } from './TestScene';
 
 /**测试Excel导入场景 */
-export class TestExcel extends Phaser.Scene {
+export class TestExcel extends TestScene {
     private table : Panel | null = null;
 
     constructor() {
-        super({ key: 'TestExcel' });
+        super('TestExcel');
     }
 
     preload() {
@@ -17,26 +18,10 @@ export class TestExcel extends Phaser.Scene {
     }
 
     create() {
+        this.createTitle("Excel导入测试");
+
         const centerX = this.cameras.main.centerX;
         const centerY = this.cameras.main.centerY;
-
-        // 添加返回按钮
-        const backButton = new Button(this, 30, 30, '', {
-            width: 40,
-            height: 40,
-            radius: 20,
-            bgColor: 0x2ecc71,
-        });
-        backButton.setIcon('icon-back');
-        backButton.on('click', () => {
-            this.scene.start('TestIndex');
-        });
-
-        // 创建标题
-        this.add.text(centerX, 50, 'Excel导入测试', {
-            fontSize: '32px',
-            color: '#000'
-        }).setOrigin(0.5);
 
         // 创建隐藏的文件输入元素
         const fileInput = document.createElement('input');

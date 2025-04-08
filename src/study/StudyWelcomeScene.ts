@@ -37,9 +37,6 @@ export class StudyWelcomeScene extends Scene {
         this.load.audio(GameConfig.sounds.click.key, GameConfig.sounds.click.path);
         this.load.image(GameConfig.icons.volume.key, GameConfig.icons.volume.path);
         this.load.image(GameConfig.icons.down.key, GameConfig.icons.down.path);
-        this.load.image('sort-raw',      'assets/icons/sort-raw.svg');
-        this.load.image('sort-alphabet', 'assets/icons/sort-alphabet.svg');
-        this.load.image('sort-random',   'assets/icons/sort-random.svg');
     }
 
     async create() {

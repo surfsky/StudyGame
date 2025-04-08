@@ -2,6 +2,7 @@ import * as XLSX from 'xlsx';
 import { Db } from './Db';
 
 export interface Word {
+    id?: number;
     en: string;
     cn: string;
     levelId: number;
@@ -23,7 +24,8 @@ export interface Level {
 export enum SortType {
     Raw = 'raw',
     Alphabet = 'alphabet',
-    Random = 'random'
+    Random = 'random',
+    Root = 'root'
 }
 
 
@@ -97,13 +99,13 @@ export class StudyDb extends Db{
                 const db = (event.target as IDBOpenDBRequest).result;
                 const transaction = (event.target as IDBOpenDBRequest).transaction;
 
-                // 创建或更新words表（levelId, en, cn, root, is_learn, is_error）
+                // 创建或更新words表（id, levelId, en, cn, root, is_learn, is_error）
                 if (!db.objectStoreNames.contains('words')) {
-                    const wordsStore = db.createObjectStore('words', { keyPath: ['levelId', 'en'] });  // 由levelId和en字段组成复合键
-                    //const wordsStore = db.createObjectStore('words');  // 导入单词 Saturn 失败: DataError: Failed to execute 'add' on 'IDBObjectStore': The object store uses out-of-line keys and has no key generator and the key parameter was not provided.
+                    const wordsStore = db.createObjectStore('words', { keyPath: 'id', autoIncrement: true });  // 使用自增id作为主键
                     wordsStore.createIndex('levelEn', ['levelId', 'en'], { unique: true });
                     wordsStore.createIndex('levelId', 'levelId', { unique: false });
                     wordsStore.createIndex('en', 'en', { unique: false });
+                    wordsStore.createIndex('root', 'root', { unique: false });
                     wordsStore.createIndex('is_learn', 'is_learn', { unique: false });
                     wordsStore.createIndex('is_error', 'is_error', { unique: false });
                 }
@@ -209,6 +211,9 @@ export class StudyDb extends Db{
 
         // 导入单词数据
         let importedCount = 0;
+        const transaction = this.db.transaction(['words'], 'readwrite');
+        const wordsStore = transaction.objectStore('words');
+
         for (const row of jsonData) {
             const word: Word = {
                 en:   String(row['英文']) || String(row['English']) || '',
@@ -221,10 +226,6 @@ export class StudyDb extends Db{
             
             if (word.en && word.cn) {
                 try {
-                    // 为每个单词创建独立的事务
-                    const transaction = this.db.transaction(['words'], 'readwrite');
-                    const wordsStore = transaction.objectStore('words');
-                    
                     await new Promise<void>((resolve, reject) => {
                         const request = wordsStore.add(word);
                         request.onsuccess = () => {
@@ -233,11 +234,7 @@ export class StudyDb extends Db{
                             resolve();
                         };
                         request.onerror = () => {
-                            if (request.error?.name === 'ConstraintError') {
-                                console.warn(`单词 ${word.en} 在关卡 ${newLevelId} 中已存在，跳过导入`);
-                            } else {
-                                console.error(`导入单词 ${word.en} 失败:`, request.error);
-                            }
+                            console.error(`导入单词 ${word.en} 失败:`, request.error);
                             resolve(); // 跳过错误继续处理
                         };
                     });
@@ -249,7 +246,7 @@ export class StudyDb extends Db{
         }
         
         return importedCount;
-    }    
+    }
     
 
 
@@ -275,13 +272,20 @@ export class StudyDb extends Db{
     //-------------------------------------------------------
     /**获取某个级别的所有单词 */
     async getLevelWords(level: number): Promise<Word[]> {
-        return this.getAll<Word>("words", level, "levelId");
+        const words = await this.getAll<Word>("words", level, "levelId");
+        return words.sort((a, b) => (a.id || 0) - (b.id || 0));
     }
 
     /**获取单词某分页数据 */
     private getPageWords(words: Word[], sortType: SortType, pageSize: number, pageId: number) {
         if (sortType === SortType.Alphabet) words = words.sort((a: Word, b: Word) => a.en.localeCompare(b.en));
         if (sortType === SortType.Random) words = words.sort(() => Math.random() - 0.5);
+        if (sortType === SortType.Root) words = words.sort((a, b) => {
+            if (a.root === b.root) {
+                return a.en.localeCompare(b.en);
+            }
+            return (a.root || '').localeCompare(b.root || '');
+        });
         return this.getPageItems(words, pageSize, pageId);
     }
 
@@ -323,10 +327,10 @@ export class StudyDb extends Db{
         if (!this.db) throw new Error('Database not initialized');
         return new Promise((resolve, reject) => {
             const transaction = this.db!.transaction(['words', 'levels'], 'readwrite');
-            const wordsStore = transaction.objectStore('words');  // index('levelEn')
-
-            // 更新单词状态
-            wordsStore.get([word.levelId, word.en]).onsuccess = (event) => {
+            const wordsStore = transaction.objectStore('words');
+            
+            // 先通过levelEn索引找到单词
+            wordsStore.index('levelEn').get([word.levelId, word.en]).onsuccess = (event) => {
                 const word = (event.target as IDBRequest<Word>).result;
                 if (word) {
                     const updatedWord = {...word, is_learn: b, is_error: word?.is_error || false };
@@ -355,7 +359,7 @@ export class StudyDb extends Db{
         if (!this.db) throw new Error('Database not initialized');
         return new Promise((resolve, reject) => {
             const store = this.db!.transaction('words', 'readwrite').objectStore('words');
-            const request = store.get([word.levelId, word.en]);
+            const request = store.index('levelEn').get([word.levelId, word.en]);
             request.onsuccess = () => {
                 const updatedWord = { ...request.result, is_error: b };
                 store.put(updatedWord);

@@ -1,4 +1,5 @@
 import Phaser from 'phaser';
+import { Control } from '../Control';
 
 /**按钮控件配置选项 */
 export interface ButtonOptions {
@@ -37,7 +38,7 @@ export interface ButtonOptions {
 /*********************************************************
  * 按钮控件，支持文本和图标的组合显示。默认 origin(0, 0)
  *********************************************************/
-export class Button extends Phaser.GameObjects.Container {
+export class Button extends Control {
     private static readonly DEFAULT_OPTIONS: ButtonOptions = {
         width: 200,
         height: 60,
@@ -57,7 +58,7 @@ export class Button extends Phaser.GameObjects.Container {
     };
 
     private options: ButtonOptions;
-    private background!: Phaser.GameObjects.Graphics;
+    private text: string;
     private label?: Phaser.GameObjects.Text;
     private icon?: Phaser.GameObjects.Image;
     private isEnabled: boolean = true;
@@ -71,46 +72,43 @@ export class Button extends Phaser.GameObjects.Container {
      * @param text 按钮文本
      * @param options 按钮配置选项
      */
-    constructor(scene: Phaser.Scene, x: number, y: number, text?: string, options: ButtonOptions = {}) {
-        super(scene, x, y);
+    constructor(scene: Phaser.Scene, x: number, y: number, text: string='', options: ButtonOptions = {}) {
+        super(scene, x, y, options.width ?? Button.DEFAULT_OPTIONS.width!, options.height ?? Button.DEFAULT_OPTIONS.height!);
         this.options = { ...Button.DEFAULT_OPTIONS, ...options };
-        this.init(text);
-        scene.add.existing(this);
-    }
+        this.text = text;
+        this.draw();
 
-    private init(text?: string): void {
-        // 创建背景
-        this.background = this.scene.add.graphics();
-        this.drawBackground();
-        this.add(this.background);
-
-        // 创建文本（如果提供）
-        if (text) {
-            this.label = this.scene.add.text(0, 0, text, {
-                fontSize: this.options.fontSize,
-                color: this.options.textColor,
-                align: 'center'
-            }).setOrigin(0.5);
-            this.add(this.label);
-        }
-
+        // events
         this.setSize(this.options.width!, this.options.height!);
         if (this.options.active)
             this.setEvents();
     }
 
     /**绘制背景 */
-    private drawBackground(): void {
+    override draw(): void {
+        super.draw();
+
+        //
         const { width, height, radius, bgColor, borderColor, borderWidth } = this.options;
-        this.background.clear();
-        this.background.fillStyle(bgColor!, 1);
-        this.background.fillRoundedRect(-width!/2, -height!/2, width!, height!, radius!);
+        this.graphics.fillStyle(bgColor!, 1);
+        this.graphics.fillRoundedRect(-width!/2, -height!/2, width!, height!, radius!);
 
         // border
         if (borderWidth! > 0) {
-            this.background.lineStyle(borderWidth!, borderColor!, 1);
-            this.background.strokeRoundedRect(-width!/2, -height!/2, width!, height!, radius!);
+            this.graphics.lineStyle(borderWidth!, borderColor!, 1);
+            this.graphics.strokeRoundedRect(-width!/2, -height!/2, width!, height!, radius!);
         }
+
+        // 创建文本（如果提供）
+        if (!this.label) {
+            this.label = this.scene.add.text(0, 0, this.text, {
+                fontSize: this.options.fontSize,
+                color: this.options.textColor,
+                align: 'center'
+            }).setOrigin(0.5);
+            this.add(this.label);
+        }
+        this.label.setText(this.text!);
     }
 
     //----------------------------------------------------------
@@ -126,16 +124,16 @@ export class Button extends Phaser.GameObjects.Container {
 
     private onPointerOver(): void {
         if (!this.isEnabled) return;
-        this.background.clear();
-        this.background.fillStyle(this.options.hoverColor!, 1);
-        this.drawBackground();
+        this.graphics.clear();
+        this.graphics.fillStyle(this.options.hoverColor!, 1);
+        this.draw();
     }
 
     private onPointerOut(): void {
         if (!this.isEnabled) return;
-        this.background.clear();
-        this.background.fillStyle(this.options.bgColor!, 1);
-        this.drawBackground();
+        this.graphics.clear();
+        this.graphics.fillStyle(this.options.bgColor!, 1);
+        this.draw();
         if (this.isPressed) {
             this.isPressed = false;
             this.setScale(1);
@@ -270,23 +268,4 @@ export class Button extends Phaser.GameObjects.Container {
         return this.isEnabled;
     }
 
-    /**
-     * 设置按钮样式
-     * @param options 样式选项
-     */
-    public setStyle(options: Partial<ButtonOptions>): this {
-        this.options = { ...this.options, ...options };
-        this.drawBackground();
-        if (this.label) {
-            this.label.setStyle({
-                fontSize: this.options.fontSize,
-                color: this.options.textColor
-            });
-        }
-        if (this.icon) {
-            this.icon.setScale(this.options.iconScale!);
-        }
-        this.updateLayout();
-        return this;
-    }
 }

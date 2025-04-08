@@ -144,4 +144,17 @@ export class UIHelper{
             ease: 'Sine.easeInOut'
         });
     }
+
+    /**
+     * 延迟调用
+     * @param {Phaser.Scene} scene - 场景实例
+     * @param {number} delay - 延迟时间（毫秒）
+     * @param {Function} callback - 回调函数
+     * @param {any} callbackContext - 回调函数的上下文
+     * @param {any[]} [args] - 回调函数的参数数组
+     * @return {Phaser.Time.TimerEvent}
+     */
+    public static delayCall(scene: Phaser.Scene, delay: number, callback: Function, callbackContext: any, args?: any[]): Phaser.Time.TimerEvent {
+        return scene.time.delayedCall(delay, callback, callbackContext, args);
+    }
 }

@@ -1,7 +1,6 @@
 import Phaser from 'phaser';
 import { Control } from '../Control';
-import { RectShape } from '../RectShape';
-import { GameConfig } from '../../GameConfig';
+import { Theme } from '../Theme';
 
 /*********************************************************
  * CheckBox 控件
@@ -10,10 +9,10 @@ import { GameConfig } from '../../GameConfig';
  * var v = cb.getValue();
  *********************************************************/
 export class CheckBox extends Control {
-    private checked: boolean;
-    private text: string;
-    private label?: Phaser.GameObjects.Text;
-    private changedCallback?: ()=>{};
+    protected checked: boolean;
+    protected text: string;
+    protected label?: Phaser.GameObjects.Text;
+    protected innerRect?: Phaser.GameObjects.Rectangle;
 
     /**获取选中状态*/
     getValue(){
@@ -21,13 +20,25 @@ export class CheckBox extends Control {
     }
     setValue(value: boolean){
         this.checked = value;
-        this.drawCheckBox(this.scene, this.text, this.checked);
+        if (this.checked) {
+            this.innerRect?.setAlpha(0);
+            this.scene.tweens.add({
+                targets: this.innerRect,
+                alpha: 1,
+                duration: 200,
+                ease: 'Linear'
+            });
+        } else {
+            this.scene.tweens.add({
+                targets: this.innerRect,
+                alpha: 0,
+                duration: 200,
+                ease: 'Linear'
+            });
+        }
+        this.draw();
         return this;
     }
-
-    /**
-     * 按钮文本
-     */
 
     /**
      * 创建按钮
@@ -49,13 +60,10 @@ export class CheckBox extends Control {
     /**绘制 */
     protected override draw(){
         super.draw();
-        this.drawCheckBox(this.scene, this.text, this.checked);
-    }
 
-    /**绘制 */
-    drawCheckBox(scene:Phaser.Scene, text: string, checked:boolean, d:number=20) {
+        //
+        var d = this.height;
         var g = this.graphics;
-        this.add(g);
 
         // 矩形外框
         g.fillStyle(0xffffff, 1);
@@ -64,36 +72,37 @@ export class CheckBox extends Control {
         g.strokeRect(0, 0, d, d);
 
         // 内实心矩形
-        if (checked){
-            g.fillStyle(0x34c759, 1);
-            g.fillRect(d*0.1, d*0.1, d*0.8, d*0.8);
+        if (!this.innerRect) {
+            this.innerRect = this.scene.add.rectangle(d*0.5, d*0.5, d*0.8, d*0.8, this.mainColor);
+            this.innerRect.setAlpha(this.checked ? 1 : 0);
+            this.add(this.innerRect);
         }
+        this.innerRect.fillColor = this.mainColor;
 
         // 右侧附上文本
-        if (text){
-            if (this.label){
-                this.label.destroy();
-            }
-            this.label = scene.add.text(d*1.4, 0, text, {
+        if (!this.label){
+            this.label = this.scene.add.text(d*1.4, 0, this.text, {
                 fontSize: '24px',
-                color: '#000000',
+                color: Theme.toColorText(this.theme.text.color), // '#000000',
             });
             this.label.setOrigin(0, 0);
             this.add(this.label);
         }
+        this.label.setText(this.text);
+        this.label.style.setColor(Theme.toColorText(this.theme.text.color));
     }
 
 
     /**设置事件 */
-    private setEvents(){
+    protected setEvents(){
         this.setInteractive({ 
             cursor: 'pointer', 
             hitArea: new Phaser.Geom.Rectangle(this.width / 2, this.height / 2, this.width, this.height), 
             hitAreaCallback: Phaser.Geom.Rectangle.Contains 
         });
         this.on('pointerdown', () => {
-            this.checked = !this.checked;
-            this.draw();
+            this.setValue(!this.checked);
+            //this.draw();
             if (this.changedCallback){
                 this.changedCallback();
             }
@@ -101,6 +110,7 @@ export class CheckBox extends Control {
     }
 
     /**设置值变更事件 */
+    protected changedCallback?: ()=>{};
     public onChanged(callback: ()=>{}){
         this.changedCallback = callback;
         return this;

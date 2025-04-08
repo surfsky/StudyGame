@@ -1,5 +1,5 @@
 import Phaser from 'phaser';
-import { Button, ButtonOptions } from './forms/Button';
+import { Button, ButtonOptions } from './Button';
 
 /**文件选择器 */
 export class FileSelector extends Button

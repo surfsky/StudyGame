@@ -1,9 +1,13 @@
 import { Scene } from 'phaser';
 import { Popup } from '../controls/overlays/Popup';
 import { Toast } from '../controls/overlays/Toast';
-import { Button } from '../controls/forms/Button';
+import { Button } from '../controls/buttons/Button';
 import { TestScene } from './TestScene';
 import { Tooltip } from '../controls/overlays/Tooltip';
+import { Anchor } from '../controls/Anchor';
+import { InputDialog } from '../controls/overlays/InputDialog';
+import { TextType } from '../controls/forms/TextBox';
+import { DialogResult } from '../controls/overlays/DialogResult';
 
 export class TestPopup extends TestScene {
     constructor() {
@@ -12,6 +16,7 @@ export class TestPopup extends TestScene {
 
     create() {
         this.createTitle("弹窗");
+        this.createBaseLine();
 
         // 创建按钮组
         const buttonStyle = {
@@ -30,6 +35,7 @@ export class TestPopup extends TestScene {
             { text: '基础弹窗', handler: () => this.showBasicPopup() },
             { text: '消息框', handler: () => this.showMessageBox() },
             { text: '对话框', handler: () => this.showDialog() },
+            { text: '输入对话框', handler: () => this.showInputDialog() },
             { text: '左侧滑入', handler: () => this.showLeftSlidePopup() },
             { text: '右侧滑入', handler: () => this.showRightSlidePopup() },
             { text: '上方滑入', handler: () => this.showBottomSlidePopup() },
@@ -254,6 +260,27 @@ export class TestPopup extends TestScene {
         popup.show();
     }
 
+    async showInputDialog() {
+        const inputDialog = new InputDialog(this, this.cameras.main.centerX, this.cameras.main.centerY, {
+            title: '用户信息',
+            message: '请输入您的姓名（2-10个字符）',
+            placeholder: '请输入姓名',
+            defaultValue: '',
+            textType: TextType.text,
+            validator: (value: string) => {
+                if (value.length < 2 || value.length > 10) {
+                    return '姓名长度必须在2-10个字符之间';
+                }
+                return true;
+            }
+        });
+
+        const result = await inputDialog.show();
+        if (result === DialogResult.Ok) {
+            new Toast(this, `您输入的姓名是：${inputDialog.getValue()}`).show();
+        }
+    }
+
     showLeftSlidePopup() {
         const popup = new Popup(this, 0, 0, {
             width: 400,
@@ -265,7 +292,7 @@ export class TestPopup extends TestScene {
                 color: 0xffffff
             },
             backgroundColor: 0x3498db,
-            anchor: 'left',
+            anchor: Anchor.left,
             borderRadius: [0, 15, 15, 0]
         });
 
@@ -287,7 +314,7 @@ export class TestPopup extends TestScene {
             animation: 'slideRight',
             showCloseButton: true,
             backgroundColor: 0xe74c3c,
-            anchor: 'right',
+            anchor: Anchor.right,
             borderRadius: [15, 0, 0, 15]
         });
 
@@ -309,7 +336,7 @@ export class TestPopup extends TestScene {
             animation: 'slideUp',
             showCloseButton: true,
             backgroundColor: 0x2ecc71,
-            anchor: 'bottom',
+            anchor: Anchor.bottom,
             borderRadius: [15, 15, 0, 0]
         });
 
@@ -331,7 +358,7 @@ export class TestPopup extends TestScene {
             animation: 'slideDown',
             showCloseButton: true,
             backgroundColor: 0x9b59b6,
-            anchor: 'top',
+            anchor: Anchor.top,
             borderRadius: [0, 0, 15, 15]
         });
 

@@ -1,6 +1,6 @@
-import { UIHelper } from '../../utils/UIHelper';
 import { Control } from '../Control';
 import { GameConfig } from '../../GameConfig';
+import { Anchor } from '../Anchor';
 
 export interface PopupOptions {
     width?: number;
@@ -29,8 +29,9 @@ export interface PopupOptions {
     animationDuration?: number;
     closeOnClickOutside?: boolean;
     dragable?: boolean;
-    anchor?: 'center' | 'left' | 'right' | 'top' | 'bottom';
+    anchor?: Anchor;
 }
+
 
 /**
  * 弹窗控件
@@ -39,7 +40,7 @@ export class Popup extends Control {
     protected background!: Phaser.GameObjects.Graphics;
     protected modalBackground: Phaser.GameObjects.Graphics | null = null;
     private contentContainer!: Phaser.GameObjects.Container;
-    private options: PopupOptions;
+    protected options: PopupOptions;
     private isDragging: boolean = false;
     private dragStartX: number = 0;
     private dragStartY: number = 0;
@@ -63,7 +64,7 @@ export class Popup extends Control {
             animationDuration: 200,
             closeOnClickOutside: true,
             dragable: false,
-            anchor: 'center',
+            anchor: Anchor.center,
             shadow: {
                 color: 0x000000,
                 blur: 10,
@@ -74,6 +75,7 @@ export class Popup extends Control {
             ...options
         };
 
+        this.setSize(this.options.width!, this.options.height!);
         this.createPopup();
         this.setVisible(false);
     }
@@ -236,23 +238,39 @@ export class Popup extends Control {
         let y = this.y;
 
         switch (this.options.anchor) {
-            case 'left':
+            case Anchor.left:
                 x = this.options.width! / 2;
                 y = camera.height / 2;
                 break;
-            case 'right':
+            case Anchor.right:
                 x = camera.width - this.options.width! / 2;
                 y = camera.height / 2;
                 break;
-            case 'top':
+            case Anchor.top:
                 x = camera.width / 2;
                 y = this.options.height! / 2;
                 break;
-            case 'bottom':
+            case Anchor.bottom:
                 x = camera.width / 2;
                 y = camera.height - this.options.height! / 2;
                 break;
-            case 'center':
+            case Anchor.topLeft:
+                x = this.options.width! / 2;
+                y = this.options.height! / 2;
+                break;
+            case Anchor.topRight:
+                x = camera.width - this.options.width! / 2;
+                y = this.options.height! / 2;
+                break;
+            case Anchor.bottomLeft:
+                x = this.options.width! / 2;
+                y = camera.height - this.options.height! / 2;
+                break;
+            case Anchor.bottomRight:
+                x = camera.width - this.options.width! / 2;
+                y = camera.height - this.options.height! / 2;
+                break;
+            case Anchor.center:
             default:
                 x = camera.width / 2;
                 y = camera.height / 2;

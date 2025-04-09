@@ -1,7 +1,7 @@
 import { Scene } from 'phaser';
-import { Button } from '../forms/Button';
+import { Button } from '../buttons/Button';
 import { Mask } from './Mask';
-import { RectShape } from '../RectShape';
+import { RectShape } from '../basic/RectShape';
 import { DialogResult } from './DialogResult';
 import { GameConfig } from '../../GameConfig';
 

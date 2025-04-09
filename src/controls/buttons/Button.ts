@@ -23,6 +23,12 @@ export interface ButtonOptions {
     borderColor?: number;
     /** 边框宽度 */
     borderWidth?: number;
+    /** 图标资源键 */
+    icon?: string;
+    /** 图标宽度 */
+    iconWidth?: number;
+    /** 图标高度 */
+    iconHeight?: number;
     /** 图标缩放比例 */
     iconScale?: number;
     /** 图标与文本的间距 */
@@ -59,10 +65,10 @@ export class Button extends Control {
 
     private options: ButtonOptions;
     private text: string;
-    private label?: Phaser.GameObjects.Text;
+    public label?: Phaser.GameObjects.Text;
     private icon?: Phaser.GameObjects.Image;
     private isEnabled: boolean = true;
-    private isPressed: boolean = false;
+    private isPressed: boolean = false; 
 
     /**
      * 创建按钮
@@ -77,6 +83,16 @@ export class Button extends Control {
         this.options = { ...Button.DEFAULT_OPTIONS, ...options };
         this.text = text;
         this.draw();
+
+        // 如果提供了图标，创建图标
+        if (this.options.icon) {
+            this.setIcon(this.options.icon, this.options.iconScale);
+            if (this.icon && (this.options.iconWidth || this.options.iconHeight)) {
+                const width = this.options.iconWidth || this.icon.width;
+                const height = this.options.iconHeight || this.icon.height;
+                this.icon.setDisplaySize(width, height);
+            }
+        }
 
         // events
         this.setSize(this.options.width!, this.options.height!);

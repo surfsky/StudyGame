@@ -1,6 +1,6 @@
 import { Scene } from 'phaser';
 import { View } from '../controls/overlays/View';
-import { Button } from '../controls/forms/Button';
+import { Button } from '../controls/buttons/Button';
 import { TestScene } from './TestScene';
 
 export class TestView extends TestScene {

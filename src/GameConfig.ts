@@ -31,7 +31,11 @@ export const GameConfig = {
         drop: { key: 'drop', path: 'assets/icons/drop.svg' },
         volume: { key: 'volume', path: 'assets/icons/volume.svg' },
         down: { key: 'down', path: 'assets/icons/down.svg' },
-        close: { key: 'close', path: 'assets/icons/close.svg' }
+        close: { key: 'close', path: 'assets/icons/close.svg' },
+        home: { key: 'home', path: 'assets/icons/home.svg' },
+        setting: { key: 'setting', path: 'assets/icons/setting.svg' },
+        refresh: { key: 'refresh', path: 'assets/icons/refresh.svg' },
+        search: { key:'search', path: 'assets/icons/search.svg' },
     },
     fonts: {
         default: '"仿宋", "SF Pro SC", "SF Pro Text", "SF Pro Icons", "PingFang SC", "Helvetica Neue", "Helvetica", "Arial", sans-serif',

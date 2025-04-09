@@ -18,7 +18,7 @@ export class Panel extends Control{ // Phaser.GameObjects.Container {
     constructor(scene: Phaser.Scene, 
         x: number, y: number, w: number, h: number, 
         contentH?: number, radius: number = 0,
-        bgColor: number = 0x000000, bgAlpha: number = 0.8,
+        bgColor: number = 0xffffff, bgAlpha: number = 0.8,
         handerColor: number = 0xffffff, handerAlpha: number = 0.2,
     ) {
         super(scene, x, y);

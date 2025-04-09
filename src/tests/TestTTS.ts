@@ -1,8 +1,8 @@
 import Phaser from 'phaser';
-import { Button } from '../controls/forms/Button';
-import { GameButton } from '../controls/forms/GameButton';
+import { Button } from '../controls/buttons/Button';
+import { GameButton } from '../controls/buttons/GameButton';
 import { TestBlock } from './TestBlock';
-import { MessageBox } from '../controls/overlays/MessageBox';
+import { MessageScene } from '../controls/overlays/MessageScene';
 import { TestScene } from './TestScene';
 
 /**测试表单控件场景 */
@@ -44,7 +44,7 @@ export class TestTTS extends TestScene {
                 speaker.speak(new SpeechSynthesisUtterance('你好。Hello world!'));
             }
             catch(e: any){
-                MessageBox.show(this, '错误', '浏览器不支持语音合成。' + e.message, false);
+                MessageScene.show(this, '错误', '浏览器不支持语音合成。' + e.message, false);
             }
         });
         

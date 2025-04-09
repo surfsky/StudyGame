@@ -1,153 +1,103 @@
-import { GameConfig } from '../../GameConfig.ts';
-import { UIHelper } from '../../utils/UIHelper.ts';
-import { DialogResult } from './DialogResult.ts';
-import { Button } from '../forms/Button.ts';
+import { Scene } from 'phaser';
+import { Dialog } from './Dialog';
+import { DialogResult } from './DialogResult';
+import { Button } from '../buttons/Button';
 
+export interface MessageBoxOptions {
+    title?: string;
+    message: string;
+    showCancel?: boolean;
+    okText?: string;
+    cancelText?: string;
+    width?: number;
+    height?: number;
+}
 
-export class MessageBox extends Phaser.Scene {
-    private title: string = "";
-    private content: string = "";
-    private parentScene: string = "";
-    private boxWidth: number = 800;
-    private boxHeight: number = 800;
-    private showCancel = true;
-    private onConfirm?: () => void;
-    private onCancel?: () => void;
+/**
+ * 消息对话框组件
+ * @example
+ * ```ts
+ * // 基本使用
+ * const result = await MessageBox.show(scene, {
+ *     message: '是否确认此操作？'
+ * });
+ * if (result === DialogResult.OK) {
+ *     // 用户点击确定
+ * }
+ * 
+ * // 自定义选项
+ * const result = await MessageBox.show(scene, {
+ *     title: '提示',
+ *     message: '确认删除这条记录吗？',
+ *     showCancel: true,
+ *     okText: '删除',
+ *     cancelText: '取消'
+ * });
+ * ```
+ */
+export class MessageBox extends Dialog {
+    private options: MessageBoxOptions;
 
-    constructor() {
-        super({ key: 'MessageBoxScene' });
+    constructor(scene: Scene, options: MessageBoxOptions) {
+        super(scene, '', options.width || 400, options.height || 200);
+        this.options = options;
+        this.initializeComponents();
+    }
+
+    private initializeComponents() {
+        // 创建标题（如果有）
+        if (this.options.title) {
+            const title = this.scene.add.text(this.width / 2, 30, this.options.title, {
+                fontSize: '24px',
+                color: '#000000',
+                align: 'center'
+            }).setOrigin(0.5);
+            this.add(title);
+        }
+
+        // 创建消息文本
+        const message = this.scene.add.text(this.width / 2, this.height / 2 - 20, this.options.message, {
+            fontSize: '20px',
+            color: '#333333',
+            align: 'center',
+            wordWrap: { width: this.width - 40 }
+        }).setOrigin(0.5);
+        this.add(message);
+
+        // 创建按钮容器
+        const buttonY = this.height - 50;
+        
+        // 确定按钮
+        const okButton = new Button(this.scene, this.width / 2 + (this.options.showCancel ? 70 : 0), buttonY, 
+            this.options.okText || '确定', {
+                width: 100,
+                fontSize: '18px',
+                bgColor: 0x4CAF50,
+                padding: 20
+            }).on('click', () => this.close(DialogResult.Ok));
+        this.add(okButton);
+
+        // 取消按钮（如果需要）
+        if (this.options.showCancel) {
+            const cancelButton = new Button(this.scene, this.width / 2 - 70, buttonY,
+                this.options.cancelText || '取消', {
+                    width: 100,
+                    fontSize: '18px',
+                    bgColor: 0xf44336,
+                    padding: 20
+                }).on('click', () => this.close(DialogResult.Cancel));
+            this.add(cancelButton);
+        }
     }
 
     /**
-     * Show module messagebox
-     * @param {Phaser.Scene} scene 
-     * @param {string} title 
-     * @param {string} content 
-     * @param {boolean} showCancel
-     * @returns {Promise<DialogResult>} 
+     * 显示消息对话框
+     * @param scene 场景实例
+     * @param options 对话框选项
+     * @returns 对话框结果（OK或Cancel）
      */
-    static async show(scene:Phaser.Scene, title:string, content:string, showCancel:boolean=false): Promise<DialogResult> {
-        return new Promise<DialogResult>((resolve) => {
-            scene.scene.pause();
-            scene.scene.launch('MessageBoxScene', {
-                title: title,
-                content: content,
-                parentScene: scene.scene.key,
-                width: scene.cameras.main.width * 0.95,
-                height: scene.cameras.main.height * 0.60,
-                showCancel: showCancel,
-                onConfirm: () => {
-                    resolve(DialogResult.Ok);
-                },
-                onCancel: () => {
-                    resolve(DialogResult.Cancel);
-                }
-            });
-        });
-    }
-
-
-    init(data: {title:string, content:string, parentScene:string, width:number, height:number, showCancel:boolean, onConfirm?:()=>void, onCancel?:()=>void}) {
-        this.title = data.title;
-        this.content = data.content;
-        this.parentScene = data.parentScene;
-        this.onConfirm = data.onConfirm;
-        this.onCancel = data.onCancel;
-        // 允许调用者设置尺寸，同时提供默认值
-        this.boxWidth = data.width || this.cameras.main.width * 0.95;  // 加大默认宽度
-        this.boxHeight = data.height || this.cameras.main.height * 0.85;  // 加大默认高度
-        this.showCancel = data.showCancel;
-    }
-
-    create() {
-        // 半透明背景
-        this.add.rectangle(
-            0, 0,
-            this.cameras.main.width, this.cameras.main.height,
-            0x000000, 0.7
-        ).setOrigin(0);
-
-        // 消息框背景和边框（居中数据）
-        const boxX = this.cameras.main.width/2 - this.boxWidth/2;
-        const boxY = this.cameras.main.height/2 - this.boxHeight/2;
-
-        // 主背景（深色背景 + 白色边框）
-        this.add.graphics()
-            .fillStyle(0x222222, 1)
-            .fillRoundedRect(boxX, boxY, this.boxWidth, this.boxHeight, 20)
-            .lineStyle(2, 0xFFFFFF, 0.5)  // 改为白色细边框
-            .strokeRoundedRect(boxX, boxY, this.boxWidth, this.boxHeight, 20);
-
-        // 标题
-        this.add.text(
-            this.cameras.main.width/2,
-            boxY + 60,
-            this.title,
-            {
-                color: '#ffff00',
-                fontSize: '54px',
-                fontFamily: GameConfig.fonts.default,
-            }
-        ).setOrigin(0.5);
-
-        // 内容区域
-        const contentPadding = 20;
-        const contentWidth = this.boxWidth - contentPadding * 2;
-        const contentHeight = Math.max(300, this.boxHeight - 240 - contentPadding * 2);  // 设置最小高度
-
-        // 创建可滚动文本
-        const area = UIHelper.createScrollContainer(this, boxX, boxY+130, contentWidth, contentHeight, contentHeight*2);
-        var text = this.add.text(
-            boxX + contentPadding,
-            20,
-            this.content,
-            {
-                fontSize: '36px',
-                color: '#ffffff',
-                fontFamily: GameConfig.fonts.default,
-                lineSpacing: 15,
-                align: 'left',
-                wordWrap: {
-                    width: contentWidth-40,
-                    useAdvancedWrap: true
-                },
-                padding: {
-                    x: 10,
-                    y: 10
-                }
-            }
-        ).setOrigin(0, 0);
-        area.add(text);
-
-        // 按钮区域
-        const buttonY = boxY + this.boxHeight - 80;
-        const buttonSpacing = 80;
-
-        // 确认按钮
-        var buttonX = this.showCancel ? this.cameras.main.width/2 - buttonSpacing : this.cameras.main.width/2;
-        new Button(this, buttonX, buttonY, '确认', {width:140, height:60, radius:30, fontSize: '32px', bgColor:0x4a90e2})
-            .onClick(() => {
-                if (this.onConfirm) {
-                    this.onConfirm();
-                }
-                this.hideScene();
-            });
-
-        // 取消按钮
-        if (this.showCancel) {
-            new Button(this, this.cameras.main.width/2 + buttonSpacing, buttonY, '取消', {width:140, height:60, radius:30, fontSize: '32px', bgColor:0xe74c3c})
-               .onClick(() => {
-                if (this.onCancel)
-                    this.onCancel();
-                this.hideScene();
-           })
-        }
-    }
-
-    private hideScene() {
-        if (this.parentScene) {
-            this.scene.resume(this.parentScene);
-        }
-        this.scene.stop();
+    public static async show(scene: Scene, options: MessageBoxOptions): Promise<DialogResult> {
+        const dialog = new MessageBox(scene, options);
+        return await dialog.show();
     }
 }

@@ -1,16 +1,15 @@
 /************************************************************
  * Align enum for anchor and childAnchor
  ***********************************************************/
-export const Anchor = {
-    TL: 'topLeft',
-    T:  'top',
-    TR: 'topRight',
-    L:  'left',
-    C:  'center',
-    CH: 'centerH',
-    R:  'right',
-    BL: 'bottomLeft',
-    B:  'bottom',
-    BR: 'bottomRight',
-    F:  'fill'
-};
+/**Anchor enum */
+export enum Anchor{
+    top = 'top',
+    topLeft = 'topLeft',
+    topRight = 'topRight',
+    bottom = 'bottom',
+    bottomLeft = 'bottomLeft',
+    bottomRight = 'bottomRight',
+    left = 'left',
+    right = 'right',
+    center = 'center',
+}

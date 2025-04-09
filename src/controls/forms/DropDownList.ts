@@ -283,7 +283,7 @@ export class DropDownList extends Control {
         this.options.dropHeight = dropHeight;
         
         // 创建面板并设置初始状态（用于动画）
-        this.dropPanel = new Panel(this.scene, x, y, this.options.dropWidth, this.options.dropHeight, this.options.dropHeight, this.options.borderRadius);
+        this.dropPanel = new Panel(this.scene, x, y, this.options.dropWidth, this.options.dropHeight, this.options.dropHeight, this.options.borderRadius, 0x000000);
         this.dropPanel.setDepth(this.depth + 1);
         this.dropPanel.setAlpha(0);
         this.dropPanel.setScale(1, 0.7);

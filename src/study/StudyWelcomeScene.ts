@@ -4,10 +4,10 @@ import { SceneHelper } from '../utils/SceneHelper';
 import { StudyDb } from './StudyDb';
 import { DropDownList } from '../controls/forms/DropDownList';
 import { Level } from './StudyDb';
-import { MessageBox} from '../controls/overlays/MessageBox';
+import { MessageScene} from '../controls/overlays/MessageScene';
 import { ImportDialog } from './ImportDialog';
 import { DialogResult } from '../controls/overlays/DialogResult';
-import { Button } from '../controls/forms/Button';
+import { Button } from '../controls/buttons/Button';
 import { Dialog } from '../controls/overlays/Dialog';
 
 /**
@@ -46,11 +46,11 @@ export class StudyWelcomeScene extends Scene {
         if (!exists) {
             try {
                 await db.initDatabase('assets/levels/words.xlsx');  // config.json
-                await MessageBox.show(this, "初始化数据库", "首次登陆需要初始化单词数据库", false);
+                await MessageScene.show(this, "初始化数据库", "首次登陆需要初始化单词数据库", false);
                 window.location.reload();
             } catch (error) {
                 console.error('初始化数据库失败:', error);
-                await MessageBox.show(this, "初始化失败", "无法加载单词数据，请确保words.xlsx文件存在", false);
+                await MessageScene.show(this, "初始化失败", "无法加载单词数据，请确保words.xlsx文件存在", false);
             }
         }
         else{
@@ -162,12 +162,12 @@ export class StudyWelcomeScene extends Scene {
         // 全新开始按钮
         new Button(this, this.game.canvas.width / 2, buttonY + buttonSpacing * 2, '重置', {width: 200, height: 60, radius: 30, fontSize: '28px', bgColor: 0x90be6d})
             .onClick(async () => {
-                var result = await MessageBox.show(this, "确认重置", "该操作将重置所有学习记录，确认继续吗？", true);
+                var result = await MessageScene.show(this, "确认重置", "该操作将重置所有学习记录，确认继续吗？", true);
                 if (result === DialogResult.Ok) {
                     await StudyDb.getInstance().resetDb();
 
                     //await new Dialog(this, "单词库已重新设置，可重新开始学习").show();
-                    result = await MessageBox.show(this, "重置成功", "单词库已重新设置，可重新开始学习", false);
+                    result = await MessageScene.show(this, "重置成功", "单词库已重新设置，可重新开始学习", false);
                     if (result == DialogResult.Ok) {
                         //window.location.reload();
                         await this.showLevels();

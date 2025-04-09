@@ -36,7 +36,7 @@ export class Img extends Control {
      * 加载图片
      * @param src 图片路径
      */
-    public loadImage(src: string): Promise<void> {
+    public loadImage(src: string): Promise<string> {
         return new Promise((resolve, reject) => {
             if (this.isLoading) return;
             this.isLoading = true;
@@ -48,7 +48,7 @@ export class Img extends Control {
             this.scene.load.once('filecomplete-image-' + key, () => {
                 this.createImage(key);
                 this.isLoading = false;
-                resolve();
+                resolve(key);
             });
 
             this.scene.load.once('loaderror', () => {

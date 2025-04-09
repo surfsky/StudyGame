@@ -1,10 +1,10 @@
 import { Scene } from 'phaser';
-import { Button } from '../controls/forms/Button';
+import { Button } from '../controls/buttons/Button';
 import { Loading } from '../controls/overlays/Loading';
-import { MessageBox } from '../controls/overlays/MessageBox';
+import { MessageScene } from '../controls/overlays/MessageScene';
 import { StudyDb } from './StudyDb';
 import { Link } from '../controls/basic/Link';
-import { FileSelector } from '../controls/forms/FileSelector';
+import { FileButton } from '../controls/buttons/FileButton';
 import { DialogResult } from '../controls/overlays/DialogResult';
 import { Dialog } from '../controls/overlays/Dialog';
 
@@ -35,7 +35,7 @@ export class ImportDialog extends Dialog {
         this.add(link);
 
         // 创建选择文件按钮
-        var filer = new FileSelector(this.scene, this.width / 2, 240, '选择文件', '.xlsx,.xls', {
+        var filer = new FileButton(this.scene, this.width / 2, 240, '选择文件', '.xlsx,.xls', {
             width: 200,
             height: 40,
             bgColor: 0x2ecc71
@@ -55,11 +55,11 @@ export class ImportDialog extends Dialog {
                 result.forEach(item => {
                     resultText.push(`${item.name}   ${item.count}个\n`);
                 });
-                await MessageBox.show(this.scene, '导入成功', resultText.join(''));
+                await MessageScene.show(this.scene, '导入成功', resultText.join(''));
                 this.close(DialogResult.Ok);
                 //this.scene.events.emit('refreshLevels'); // 触发刷新事件
             } catch (error: any) {
-                await MessageBox.show(this.scene, '导入失败', error.message);
+                await MessageScene.show(this.scene, '导入失败', error.message);
             } finally {
                 Loading.hide();
                 input.value = '';

@@ -15,6 +15,7 @@ export class TestInput extends TestScene {
 
     create() {
         this.createTitle("Form");
+        this.createBaseLine();
         
         // 使用TextType的输入校验文本框
         const textbox1 = new TextBox(this, 100, 100, {

@@ -9,6 +9,7 @@ export class TestImage extends TestScene {
 
     create() {
         super.createTitle('Image');
+        this.createBaseLine();
 
         // 测试本地图片加载
         const localImg = new Img(this, 100, 100, {

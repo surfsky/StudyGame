@@ -1,5 +1,5 @@
 import Phaser, { Game } from 'phaser';
-import { Button } from '../controls/forms/Button';
+import { Button } from '../controls/buttons/Button';
 import { DropDownList } from '../controls/forms/DropDownList';
 import { ThemeManager } from '../controls/Theme';
 import { GameConfig } from '../GameConfig';
@@ -21,6 +21,13 @@ export class TestScene extends Phaser.Scene {
 
     create() {
         this.createTitle('Control 示例');
+    }
+
+    /**Create a base line */
+    public createBaseLine(x:number=100){
+        var g = this.add.graphics();
+        g.lineStyle(1, 0xa0a0a0);
+        g.strokeLineShape(new Phaser.Geom.Line(x, 0, x, this.game.canvas.height));
     }
 
     /**Create title items */

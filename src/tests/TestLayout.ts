@@ -16,6 +16,7 @@ export class TestLayout extends TestScene {
 
     create() {
         this.createTitle("Layout");
+        this.createBaseLine();
         
         // 设置背景
         //this.add.image(400, 300, 'sky');

@@ -1,9 +1,9 @@
 import Phaser from 'phaser';
-import { Button } from '../controls/forms/Button';
+import { Button } from '../controls/buttons/Button';
 import { Control } from '../controls/Control';
 import { Link } from '../controls/basic/Link';
 import { Rect } from '../controls/Rect';
-import { RectShape } from '../controls/RectShape';
+import { RectShape } from '../controls/basic/RectShape';
 import { Column } from '../controls/layouts/Column';
 import { CheckBox } from '../controls/forms/CheckBox';
 import { TestScene } from './TestScene';
@@ -20,6 +20,7 @@ export class TestControls extends TestScene {
 
     create() {
         this.createTitle('Control 示例');
+        this.createBaseLine();
 
         var column = new Column(this, 10, 200, this.game.canvas.width-20, this.game.canvas.height, 20);
         column.setOrigin(0);

@@ -1,5 +1,5 @@
 import Phaser from 'phaser';
-import { Control } from './Control';
+import { Control } from '../Control';
 
 export interface TagOptions {
     /** 背景颜色 */
@@ -8,8 +8,8 @@ export interface TagOptions {
     textColor?: number;
     /** 圆角大小 */
     radius?: number;
-    /** 内边距 */
-    padding?: number;
+    /** 外部高度 */
+    height?: number;
     /** 文本样式 */
     textStyle?: Phaser.Types.GameObjects.Text.TextStyle;
 }
@@ -28,8 +28,8 @@ export class Tag extends Control {
         this.options = {
             bgColor: 0x3498db,
             textColor: 0xffffff,
+            height: 32,
             radius: 4,
-            padding: 8,
             textStyle: {
                 fontSize: '14px',
                 color: '#ffffff',
@@ -46,14 +46,17 @@ export class Tag extends Control {
         this.add(this.text);
 
         // 设置控件大小
-        const width = this.text.width + (this.options.padding! * 2);
-        const height = this.text.height + (this.options.padding! * 2);
+        var height = this.options.height!;
+        var width = this.text.width + 8;
+        if (width < height) {
+            width = height;
+        }
         this.setSize(width, height);
 
         // 居中文本
         this.text.setPosition(
-            this.options.padding,
-            this.options.padding
+            width / 2 - this.text.width / 2,
+            height / 2 - this.text.height / 2
         );
 
         this.draw();
@@ -89,10 +92,9 @@ export class Tag extends Control {
      */
     public setText(text: string): void {
         this.text.setText(text);
-        // 更新控件大小
-        const width = this.text.width + (this.options.padding! * 2);
-        const height = this.text.height + (this.options.padding! * 2);
-        this.setSize(width, height);
+        // 更新控件大小，保持固定高度
+        const width = this.text.width;
+        this.setSize(width, this.options.height!);
         // 重绘
         this.draw();
     }

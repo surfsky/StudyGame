@@ -39,51 +39,56 @@ Last Update：2025-03
     支持单向数据绑定
     用事件剥离界面和逻辑（为实现设计器做准备，显示外框、禁止所有事件，可拖拽放置）
 
-- base
-    [*] control: theme, draw, bounds
-    [*] panel: scroll panel
-    [*] rect
-    [*] label
-    [*] image
-    [ ] pager(....)
-- overlay
-    [*] popup: modal, 
-    [*] dialog
-    [*] mask
-    [ ] sliderview
-    [ ] toast
-- layout：
-    [*] row
-    [*] column
-    [*] grid
-- form：
-    [*] button
+- basic
+    [*] Control: theme, draw, bounds
+    [*] Panel: scroll panel
+    [*] Rect
+    [*] Label
+    [*] Img
+    [*] Tag
+    [*] ProgressBar
+- button
+    [*] Button
     [*] GameButton
-    [ ] ImageButton
     [*] GroupButton
-    [ ] slider
-    [ ] progressbar
-    [*] link
-    [*] fileSelector
-    [*] switch
-    [*] checkbox
-    [*] radiobox
-    [*] dropdownlist
-    [ ] ListBox
+    [*] FileButton
+    [*] ImageButton
+- form：
+    [*] Link
+    [*] Switcher
+    [*] CheckBox
+    [*] RadioBox
     [*] Textbox (全部由PhaserJs实现有困难（输入法、换行、光标、滚动等），内置一个html input，用样式控制)
-    [ ] Combobox = textbox + listbox
     [ ] Calendar
     [ ] DatePicker
     [ ] TimePicker
 - data
-    [ ] GridView
-    [ ] CheckListBox
-    [ ] Tree
-- app
-    [ ] View（全屏），可左右滑动
-    [ ] AppBar
+    [*] DropdownList
+    [*] ListBox
+    [ ] Combobox = textbox + listbox
+    [*] Table
+    [-] Tree
+    [ ] SliderView
     [ ] ListView
-    [ ] actionsheet
+    [ ] Pager
+- overlay
+    [*] mask
+    [*] popup: modal, closebutton, closeWhenClickOutside
+    [*] dialog
+    [*] messagebox
+    [*] toast
+    [*] tooltip
+- layout：
+    [*] Row
+    [*] Column
+    [*] Grid
+- app
+    [-] View（全屏），可左右滑动
+    [ ] TitleBar
+    [ ] TabBar
+    [ ] IconBar
+    [ ] ActionSheet(Popup anchor=button)
+    [ ] DatePickerSheet
 
 
 控件Task

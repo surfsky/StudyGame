@@ -1,5 +1,5 @@
 import Phaser from 'phaser';
-import { Button } from '../controls/forms/Button';
+import { Button } from '../controls/buttons/Button';
 import { Table } from '../controls/data/Table';
 import { TestScene } from './TestScene';
 

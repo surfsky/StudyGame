@@ -1,7 +1,7 @@
 import { GameConfig} from './GameConfig.ts';
 import { SceneHelper } from './utils/SceneHelper.js';
 import { UIHelper } from './utils/UIHelper.js';
-import { Button } from './controls/forms/Button.js';
+import { Button } from './controls/buttons/Button.js';
 import { Panel } from './controls/Panel.js';
 import { ThemeManager } from './controls/Theme.ts';
 
@@ -47,7 +47,7 @@ export class AboutScene extends Phaser.Scene {
         ).setOrigin(0.5, 0);
 
         // 内容
-        this.scrollPanel = new Panel(this, 0, 150, this.game.canvas.width, this.game.canvas.height, this.game.canvas.height*2);
+        this.scrollPanel = new Panel(this, 0, 150, this.game.canvas.width, this.game.canvas.height, this.game.canvas.height*2, 0, 0x000000);
         //UIHelper
         //    .createScrollContainer(
         //        this, 

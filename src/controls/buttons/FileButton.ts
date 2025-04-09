@@ -2,7 +2,7 @@ import Phaser from 'phaser';
 import { Button, ButtonOptions } from './Button';
 
 /**文件选择器 */
-export class FileSelector extends Button
+export class FileButton extends Button
 {
     private fileInput: HTMLInputElement;
     private callback = (files: FileList|null, input: HTMLInputElement) => {};

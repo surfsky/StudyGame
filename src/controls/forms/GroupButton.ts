@@ -1,5 +1,4 @@
 import { Control } from "../Control";
-import { Painter } from "../Painter";
 
 export class GroupButton extends Control {
     private items: string[] = [];

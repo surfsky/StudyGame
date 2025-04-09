@@ -1,5 +1,5 @@
 import Phaser from 'phaser';
-import { Button } from '../controls/forms/Button';
+import { Button } from '../controls/buttons/Button';
 import { Panel } from '../controls/Panel';
 import * as XLSX from 'xlsx';
 import { Loading } from '../controls/overlays/Loading';
@@ -78,7 +78,7 @@ export class TestExcel extends TestScene {
 
         //
         if(!this.table)
-            this.table = new Panel(this, startX, startY, this.game.canvas.width-startX*2, this.game.canvas.height-startY-padding, 2000);
+            this.table = new Panel(this, startX, startY, this.game.canvas.width-startX*2, this.game.canvas.height-startY-padding, 2000, 0, 0xffffff);
         else
             this.table.list.forEach(child => child.destroy());
 

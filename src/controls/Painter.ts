@@ -1,10 +1,89 @@
-import Phaser from 'phaser';
+import Phaser, { Scene } from 'phaser';
 import { Control } from './Control';
+import { get } from 'http';
 
 /**
  * 绘画辅助类
  */
 export class Painter{
+    /**获取亮一点的色彩 */
+    public static getLightColor(color:number, alpha:number=0.5) : number{
+        const r = (color >> 16) & 0xFF;
+        const g = (color >> 8) & 0xFF;
+        const b = color & 0xFF;
+
+        // 根据alpha增加RGB值来实现变亮效果
+        const lightR = Math.min(255, r + Math.floor((255 - r) * alpha));
+        const lightG = Math.min(255, g + Math.floor((255 - g) * alpha));
+        const lightB = Math.min(255, b + Math.floor((255 - b) * alpha));
+
+        return Phaser.Display.Color.GetColor(lightR, lightG, lightB);
+    }
+
+    /** 获取暗一点的色彩 */
+    public static getDarkColor(color:number, alpha:number=0.5) : number{
+        const r = (color >> 16) & 0xFF;
+        const g = (color >> 8) & 0xFF;
+        const b = color & 0xFF;
+
+        // 根据alpha减少RGB值来实现变暗效果
+        const darkR = Math.max(0, r - Math.floor(r * alpha));
+        const darkG = Math.max(0, g - Math.floor(g * alpha));
+        const darkB = Math.max(0, b - Math.floor(b * alpha));
+
+        return Phaser.Display.Color.GetColor(darkR, darkG, darkB);
+    }
+
+    /** 获取灰度色彩 */
+    public static getGrayColor(color:number, alpha:number=0.5) : number{
+        const r = (color >> 16) & 0xFF;
+        const g = (color >> 8) & 0xFF;
+        const b = color & 0xFF;
+
+        // 计算RGB的平均值来实现灰度效果
+        const gray = Math.floor((r + g + b) / 3);
+        const finalGray = Math.floor(gray * alpha + ((r + g + b) / 3) * (1 - alpha));
+
+        return Phaser.Display.Color.GetColor(finalGray, finalGray, finalGray);
+    }
+
+
+    /** 加载src网络图片，并显示在指定位置 */
+    public static async drawImage(scene:Scene, src:string, x:number, y:number, w:number, h:number) : Promise<Phaser.GameObjects.Image>{
+        var key = await Painter.loadImage(scene, src);
+        var image = scene.add.image(0, 0, key);
+        scene.add.existing(image);
+        return image;
+    }
+
+    /**
+     * 加载图片
+     * @param src 图片路径
+     * @returns 图片key
+     */
+    public static loadImage(scene: Scene, src: string): Promise<string> {
+        var isLoading = false;
+        return new Promise((resolve, reject) => {
+            if (isLoading) return;
+            isLoading = true;
+            const key = `img_${Date.now()}`;
+            console.log(`load image, key=${key}, src=${src}`);
+            
+            scene.load.once('filecomplete-image-' + key, () => {
+                isLoading = false;
+                resolve(key);
+            });
+
+            scene.load.once('loaderror', () => {
+                isLoading = false;
+                reject(new Error('Failed to load image: ' + src));
+            });
+
+            scene.load.image(key, src);
+            scene.load.start();
+        });
+    }
+
 
     /**创建一个圆角矩形*/
     public static drawRoundRect(

@@ -1,8 +1,9 @@
 import Phaser from 'phaser';
-import { Button } from '../controls/forms/Button';
-import { GameButton } from '../controls/forms/GameButton';
+import { Button } from '../controls/buttons/Button';
+import { GameButton } from '../controls/buttons/GameButton';
 import { TestBlock } from './TestBlock';
 import { TestScene } from './TestScene';
+import { ImageButton } from '../controls/buttons/ImageButton';
 
 /**测试表单控件场景 */
 export class TestButton extends TestScene {
@@ -14,10 +15,17 @@ export class TestButton extends TestScene {
         // 预加载按钮图片
         this.load.image('icon-test', 'assets/icons/down.svg');
         this.load.image('icon-back', 'assets/icons/left.svg');
+        this.load.image('icon-home', 'assets/icons/home.svg');
+        this.load.image('icon-settings', 'assets/icons/settings.svg');
+        
+        // 预加载按钮背景图片
+        this.load.image('btn-circle', 'assets/images/btn-circle.svg');
+        this.load.image('btn-rect', 'assets/images/btn-rect.svg');
     }
 
     create() {
         this.createTitle("Button");
+        this.createBaseLine();
 
         // 基础按钮测试
         const basicButton = new Button(this, 120, 100, '基础按钮');
@@ -47,8 +55,31 @@ export class TestButton extends TestScene {
             hoverColor: 0x27ae60,
             borderColor: 0x2ecc71,
             borderWidth: 3
-        });//.setOrigin(0);
+        });
 
+
+        // 圆形背景的图片按钮
+        const circleImageBtn = new ImageButton(this, 400, 100, 'btn-circle', '圆形按钮', {
+            width: 100,
+            height: 100,
+            fontSize: '16px',
+            textColor: '#ffffff'
+        });
+
+        // 方形背景的图片按钮
+        const rectImageBtn = new ImageButton(this, 400, 250, 'btn-rect', '方形按钮', {
+            width: 200,
+            height: 60,
+            fontSize: '20px',
+            textColor: '#ffffff'
+        });
+
+        // 组合图标和背景的按钮
+        const combinedImageBtn = new ImageButton(this, 400, 400, 'btn-circle', '', {
+            width: 80,
+            height: 80
+        }).setText('设置').setEnabled(false);
+ 
     }
 }
 

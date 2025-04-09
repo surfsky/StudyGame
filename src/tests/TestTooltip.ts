@@ -1,5 +1,5 @@
 import { Scene } from 'phaser';
-import { Button } from '../controls/forms/Button';
+import { Button } from '../controls/buttons/Button';
 import { TestScene } from './TestScene';
 import { Tooltip } from '../controls/overlays/Tooltip';
 

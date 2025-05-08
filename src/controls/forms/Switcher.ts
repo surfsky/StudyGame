@@ -101,6 +101,7 @@ export class Switcher extends Control {
         if (this.isOn !== value) {
             this.isOn = value;
             this.draw();
+            this.emit('change', this.isOn);
         }
         return this;
     }

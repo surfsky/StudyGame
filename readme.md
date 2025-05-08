@@ -139,6 +139,7 @@ fixbug：重置时太快显示消息框，这里异步有问题，数据未能�
 
 ## Done
 
+/换页时 study状态
 /实现 Img 控件，可异步加载图片
 /实现 GroupButton 控件
 /实现panel的惯性滑动功能。

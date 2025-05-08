@@ -9,6 +9,7 @@ import { Button } from '../controls/buttons/Button';
 import { SortType } from './StudyDb';
 import { DropDownList } from '../controls/forms/DropDownList';
 import { Switcher } from '../controls/forms/Switcher';
+import { Toast } from '../controls/overlays/Toast';
 
 
 /**
@@ -41,6 +42,7 @@ export class StudyScene extends Scene {
     private btn!: Button;
     private ddl!: DropDownList;
     private switcher!: Switcher;
+    private study!: boolean;
 
 
     //-----------------------------------------------------
@@ -53,10 +55,11 @@ export class StudyScene extends Scene {
     }
 
     /**数据初始化 */
-    async init(data: { level:Level, mode: 'all' | 'unlearned' | 'error', pageId:number}) {
+    async init(data: { level:Level, mode: 'all' | 'unlearned' | 'error', pageId:number, study: boolean}) {
         this.level = data.level;
         this.levelId = this.level.levelId;
         this.levelName = this.level.title;
+        this.study = data.study ?? false;
         this.mode = data.mode;
         this.pageId = data.pageId;
         this.doc.onMatchSuccess = async () => {
@@ -75,7 +78,7 @@ export class StudyScene extends Scene {
             const currentPage = this.doc.getPageId() + 1;
             const totalPages = this.doc.getPages();
             if (currentPage <= totalPages) {
-                this.scene.restart({ levelId: this.levelId, levelName:this.levelName, mode: this.mode, pageId:0 });
+                this.scene.restart({ level: this.level, mode: this.mode, pageId:0, study: this.switcher.getValue() });
             }
         };
     }
@@ -106,6 +109,7 @@ export class StudyScene extends Scene {
         await this.createWordItems();
         await this.showStat();
         this.setupDragSystem();
+        this.switcher.setValue(this.study);
     }
 
     
@@ -236,6 +240,7 @@ export class StudyScene extends Scene {
         this.switcher = new Switcher(this, this.game.canvas.width-72, this.game.canvas.height - 60);
         this.switcher.on('change', (value: boolean) => {
             this.createWordItems(this.ddl.getSelectedValue(), !this.switcher.getValue());
+            new Toast(this, value? '学习模式已开启': '学习模式已关闭').show();
         });
     }
 

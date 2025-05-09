@@ -1,7 +1,7 @@
 import Phaser from 'phaser';
 import { Button } from '../controls/buttons/Button';
 import { Table } from '../controls/data/Table';
-import { TestScene } from './TestScene';
+import { TestScene } from './SceneBase';
 
 /**
  * 表格控件测试场景

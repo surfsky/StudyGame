@@ -1,0 +1,69 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <title>Edge TTS 文本朗读</title>
+    <style>
+        body { font-family: Arial, sans-serif; display: flex; flex-direction: column; align-items: center; padding: 20px; }
+        textarea { width: 600px; height: 200px; margin: 10px; padding: 10px; }
+        button { padding: 10px 30px; font-size: 16px; background-color: #0078d4; color: white; border: none; border-radius: 5px; cursor: pointer; }
+        #status { margin-top: 20px; color: #666; }
+    </style>
+</head>
+<body>
+    <h2>Azure TTS 文本朗读演示</h2>
+    <textarea id="textInput" placeholder="请输入需要朗读的文本"></textarea>
+    <button onclick="startSpeech()">开始朗读</button>
+    <div id="status"></div>
+
+    <script>
+        // 替换为你的 Azure 语音服务密钥和区域
+        // https://azure.microsoft.com/zh-cn/products/ai-services/ai-speech/
+        const SUBSCRIPTION_KEY = '9eRtybW98rX19sXSK6Ygm5KADR3yIgQS7nJAKB5qCCmfaMgnOf6kJQQJ99BEAC3pKaRXJ3w3AAAYACOG4oMv';
+        const REGION = 'eastasia';
+
+        async function startSpeech() {
+            const text = document.getElementById('textInput').value.trim();
+            if (!text) return alert('请输入文本');
+
+            document.getElementById('status').textContent = '正在生成语音...';
+
+            try {
+                // 构造请求参数
+                const requestBody = `
+                    <speak version="1.0" xmlns="http://www.w3.org/2001/10/synthesis" xml:lang="zh-CN">
+                        <voice name="zh-CN-XiaoxiaoNeural">
+                            ${text}
+                        </voice>
+                    </speak>
+                `;
+
+                // 发送 HTTP 请求到 Azure 语音服务
+                const response = await fetch('https://' + REGION + '.tts.speech.microsoft.com/cognitiveservices/v1', {
+                    method: 'POST',
+                    headers: {
+                        'Ocp-Apim-Subscription-Key': SUBSCRIPTION_KEY,
+                        'Content-Type': 'application/ssml+xml',
+                        'X-Microsoft-OutputFormat': 'audio-24khz-160kbitrate-mono-mp3', // 音频格式
+                        'User-Agent': 'Edge TTS Demo'
+                    },
+                    body: requestBody
+                });
+
+                if (!response.ok) throw new Error('请求失败：' + response.status);
+
+                // 播放音频
+                const audioBlob = await response.blob();
+                const audioUrl = URL.createObjectURL(audioBlob);
+                const audio = new Audio(audioUrl);
+                audio.play();
+
+                document.getElementById('status').textContent = '朗读完成';
+            } catch (error) {
+                document.getElementById('status').textContent = '错误：' + error.message;
+                console.error(error);
+            }
+        }
+    </script>
+</body>
+</html>

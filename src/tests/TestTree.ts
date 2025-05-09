@@ -1,5 +1,5 @@
 import { Tree } from "../controls/data/Tree";
-import { TestScene } from "./TestScene";
+import { TestScene } from "./SceneBase";
 
 export class TestTree extends TestScene {
     private tree!: Tree;

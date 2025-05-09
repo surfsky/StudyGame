@@ -95,12 +95,15 @@ export class StudyScene extends Scene {
         this.load.audio(GameConfig.sounds.error.key,   GameConfig.sounds.error.path);
         this.load.audio(GameConfig.sounds.clear.key,   GameConfig.sounds.clear.path);
         this.load.audio(GameConfig.sounds.bgm.key,     GameConfig.sounds.bgm.path);
+        this.load.svg(GameConfig.icons.close.key,     GameConfig.icons.close.path);
+
         // 加载背景图片
         this.load.image('bg', GameConfig.bgs[0].path);
         this.load.image('sort-raw',      'assets/icons/sort-raw.svg');
         this.load.image('sort-alphabet', 'assets/icons/sort-alphabet.svg');
         this.load.image('sort-random',   'assets/icons/sort-random.svg');
-        this.load.image('sort-root',   'assets/icons/sort-root.svg');
+        this.load.image('sort-root',     'assets/icons/sort-root.svg');
+        this.load.svg('speak',           'assets/icons/speak.svg');
     }
 
     /**创建场景UI */
@@ -146,7 +149,7 @@ export class StudyScene extends Scene {
             return container;
         });
         this.ddl.setBaseUIOnShow((item: SortOption) => {
-            this.btn.setIcon(item.icon, 1.4);
+            this.btn.setIcon(item.icon, 1.2);
             //this.btn.setText(item.text);
         });
         this.ddl.setItemUI((item: SortOption, index:number) => {
@@ -178,7 +181,7 @@ export class StudyScene extends Scene {
         new RectShape(this, 0, 0, this.game.canvas.width, this.game.canvas.height, 0, 0x000000, 0.5);
 
         // 返回按钮
-        new Button(this, 60, 40, '', { width: 60, height: 60, radius:30, bgColor: GameConfig.colors.contrast })
+        new Button(this, 40, 40, '', { width: 48, height: 48, radius:24, bgColor: GameConfig.colors.contrast })
             .setIcon(GameConfig.icons.back.key, 1.5)
             .onClick(() => SceneHelper.goScene(this, 'StudyWelcomeScene', {levelId: this.levelId}))
             ;

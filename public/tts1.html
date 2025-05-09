@@ -1,0 +1,86 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Text to Speech</title>
+    <style>
+        body {
+            padding: 20px;
+            max-width: 600px;
+            margin: 0 auto;
+            font-family: system-ui, -apple-system, sans-serif;
+        }
+        textarea {
+            width: 100%;
+            height: 150px;
+            padding: 12px;
+            margin-bottom: 15px;
+            border: 1px solid #ccc;
+            border-radius: 8px;
+            font-size: 16px;
+            box-sizing: border-box;
+        }
+        button {
+            padding: 12px 24px;
+            margin: 5px;
+            font-size: 16px;
+            border: none;
+            border-radius: 8px;
+            background-color: #007bff;
+            color: white;
+            cursor: pointer;
+            transition: background-color 0.2s;
+        }
+        button:hover {
+            background-color: #0056b3;
+        }
+        #pauseButton, #stopButton {
+            background-color: #dc3545;
+        }
+        #resumeButton {
+            background-color: #28a745;
+        }
+        @media (max-width: 480px) {
+            body {
+                padding: 15px;
+            }
+            button {
+                width: calc(50% - 10px);
+                margin-bottom: 10px;
+            }
+        }
+    </style>
+</head>
+
+<body>
+    <textarea id="textInput" placeholder="请输入要转换为语音的文本"></textarea><br>
+    <button id="speakButton">朗读</button>
+
+    <script>
+        // UI 元素
+        const textInput = document.getElementById('textInput');
+        const speakButton = document.getElementById('speakButton');
+
+        // 朗读按钮点击事件
+        speakButton.addEventListener('click', function () {
+            speak(textInput.value);
+        });
+
+        /**
+         * 朗读文本
+         * @param {string} text 要朗读的文本
+         */
+        function speak(text) {
+            if (text !== '') {
+                const utterance = new SpeechSynthesisUtterance(text);
+                utterance.lang = 'zh-CN';
+                utterance.rate = 1;
+                utterance.pitch = 1;
+                utterance.volume = 1;
+                window.speechSynthesis.speak(utterance);
+            }
+        }
+    </script>
+</body>
+</html>

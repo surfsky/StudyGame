@@ -1,6 +1,5 @@
 import Phaser from 'phaser';
 import { GameConfig } from '../GameConfig';
-import { MessageScene } from '../controls/overlays/MessageScene';
 import { Button } from '../controls/buttons/Button';
 import { TestBlock } from './TestBlock';
 import { TestLayout } from './TestLayout';
@@ -17,7 +16,7 @@ import { TestImage } from './TestImage';
 import { TestDrag } from './TestDrag';
 import { TestResize } from './TestResize';
 import { TestTable } from './TestTable';
-import { TestScene } from './TestScene';
+import { TestScene } from './SceneBase';
 import { TestView } from './TestView';
 import { TestDialog } from './TestDialog';
 import { Tag } from '../controls/basic/Tag';
@@ -168,7 +167,7 @@ const config = {
         height: '100%',
         autoCenter: Phaser.Scale.CENTER_BOTH
     },
-    scene: [Index, MessageScene, 
+    scene: [Index, 
         TestBlock, TestLayout, TestInput, TestButton, 
         TestTTS, TestExcel, TestControls, TestFormBasic, 
         TestPopup, TestTooltip, TestTag, TestImage,

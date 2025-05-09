@@ -1,12 +1,11 @@
 import { Scene } from 'phaser';
-import { Button } from '../controls/buttons/Button';
 import { Loading } from '../controls/overlays/Loading';
-import { MessageScene } from '../controls/overlays/MessageScene';
 import { StudyDb } from './StudyDb';
 import { Link } from '../controls/basic/Link';
 import { FileButton } from '../controls/buttons/FileButton';
 import { DialogResult } from '../controls/overlays/DialogResult';
 import { Dialog } from '../controls/overlays/Dialog';
+import { MessageBox } from '../controls/overlays/MessageBox';
 
 export class ImportDialog extends Dialog {
     constructor(scene: Scene) {
@@ -55,11 +54,11 @@ export class ImportDialog extends Dialog {
                 result.forEach(item => {
                     resultText.push(`${item.name}   ${item.count}个\n`);
                 });
-                await MessageScene.show(this.scene, '导入成功', resultText.join(''));
+                await MessageBox.show(this.scene, { title: '导入成功', message: resultText.join('') });
                 this.close(DialogResult.Ok);
                 //this.scene.events.emit('refreshLevels'); // 触发刷新事件
             } catch (error: any) {
-                await MessageScene.show(this.scene, '导入失败', error.message);
+                await MessageBox.show(this.scene, { title: '导入失败', message: error.message });
             } finally {
                 Loading.hide();
                 input.value = '';

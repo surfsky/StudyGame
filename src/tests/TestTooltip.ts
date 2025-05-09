@@ -1,6 +1,6 @@
 import { Scene } from 'phaser';
 import { Button } from '../controls/buttons/Button';
-import { TestScene } from './TestScene';
+import { TestScene } from './SceneBase';
 import { Tooltip } from '../controls/overlays/Tooltip';
 
 export class TestTooltip extends TestScene {

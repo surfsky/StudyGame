@@ -1,7 +1,7 @@
 import { Scene } from 'phaser';
 import { Button } from '../controls/buttons/Button';
 import { DialogResult } from '../controls/overlays/DialogResult';
-import { TestScene } from './TestScene';
+import { TestScene } from './SceneBase';
 import { MessageBox } from '../controls/overlays/MessageBox';
 
 export class TestDialog extends TestScene {

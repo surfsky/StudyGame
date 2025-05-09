@@ -1,6 +1,6 @@
 import { Scene } from 'phaser';
 import { Img } from '../controls/basic/Img';
-import { TestScene } from './TestScene';
+import { TestScene } from './SceneBase';
 
 export class TestDrag extends TestScene {
     private image!: Phaser.GameObjects.Image;

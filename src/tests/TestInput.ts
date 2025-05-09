@@ -1,6 +1,6 @@
 import Phaser from 'phaser';
 import { TextBox, TextType } from '../controls/forms/TextBox';
-import { TestScene } from './TestScene';
+import { TestScene } from './SceneBase';
 
 /**测试表单控件场景 */
 export class TestInput extends TestScene {

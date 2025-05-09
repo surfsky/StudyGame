@@ -1,5 +1,5 @@
 import { Scene } from 'phaser';
-import { TestScene } from './TestScene';
+import { TestScene } from './SceneBase';
 import { Tag } from '../controls/basic/Tag';
 
 export class TestTag extends TestScene {

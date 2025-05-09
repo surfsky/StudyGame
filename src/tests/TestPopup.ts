@@ -2,7 +2,7 @@ import { Scene } from 'phaser';
 import { Popup } from '../controls/overlays/Popup';
 import { Toast } from '../controls/overlays/Toast';
 import { Button } from '../controls/buttons/Button';
-import { TestScene } from './TestScene';
+import { TestScene } from './SceneBase';
 import { Tooltip } from '../controls/overlays/Tooltip';
 import { Anchor } from '../controls/Anchor';
 import { InputDialog } from '../controls/overlays/InputDialog';

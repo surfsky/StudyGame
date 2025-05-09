@@ -2,7 +2,7 @@ import Phaser from 'phaser';
 import { Button } from '../controls/buttons/Button';
 import { GameButton } from '../controls/buttons/GameButton';
 import { TestBlock } from './TestBlock';
-import { TestScene } from './TestScene';
+import { TestScene } from './SceneBase';
 import { ImageButton } from '../controls/buttons/ImageButton';
 
 /**测试表单控件场景 */

@@ -119,3 +119,42 @@
         }
         return this;
     }
+
+    //private static readonly MIN_WIDTH = 120;
+    //private static readonly MAX_WIDTH = 400;
+    //private isScrolling: boolean = false;
+    //private scrollText: Phaser.GameObjects.Text | null = null;
+    //private scrollBackground: Phaser.GameObjects.Graphics | null = null;
+
+
+        //const dialog = new Dialog(this.scene, content);
+        //const btnSpeak = this.scene.add.image(20, 20, 'speak').setOrigin(0)
+        //    .setInteractive()
+        //    .setTint(0x0000ff) // 设置初始颜色为白色
+        //    .on('pointerdown', () => {btnSpeak.setScale(0.9);})
+        //    .on('pointerout',  () => {btnSpeak.setScale(1);})
+        //    .on('pointerup', () => {
+        //        btnSpeak.setScale(1);
+        //        this.speak(this.word!.en);
+        //    });
+        //dialog.add(btnSpeak);
+        //await dialog.show();
+
+
+    private speak(text: string) {
+        window.speechSynthesis.cancel();
+        const utterance = new SpeechSynthesisUtterance(text);
+        utterance.lang = this.wordType === 'en' ? 'en-US' : 'zh-CN';
+        window.speechSynthesis.speak(utterance);
+    }
+
+import { MessageScene} from '../controls/overlays/MessageScene';
+import { Dialog } from '../controls/overlays/Dialog';
+                //await MessageScene.show(this, "初始化数据库", "首次登陆需要初始化单词数据库", false);
+                //await MessageScene.show(this, "初始化失败", "无法加载单词数据，请确保words.xlsx文件存在", false);
+                //var result = await MessageScene.show(this, "确认重置", "该操作将重置所有学习记录，确认继续吗？", true);
+                    //await new Dialog(this, "单词库已重新设置，可重新开始学习").show();
+                    //result = await MessageScene.show(this, "重置成功", "单词库已重新设置，可重新开始学习", false);
+
+                //await MessageScene.show(this.scene, '导入成功', resultText.join(''));
+                //await MessageScene.show(this.scene, '导入失败', error.message);

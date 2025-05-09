@@ -2,7 +2,7 @@ import 'phaser';
 import { Row } from '../controls/layouts/Row';
 import { Grid } from '../controls/layouts/Grid';
 import { Column } from '../controls/layouts/Column';
-import { TestScene } from './TestScene';
+import { TestScene } from './SceneBase';
 
 export class TestLayout extends TestScene {
     constructor() {

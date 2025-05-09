@@ -239,7 +239,7 @@ export class Button extends Control {
     private updateLayout(): void {
         if (!this.icon && !this.label) return;
 
-        if (this.icon && this.label) {
+        if (this.icon && this.label && this.label.text!='') {
             // 同时存在图标和文本时的布局
             const spacing = this.options.iconSpacing!;
             switch (this.options.iconPosition) {
@@ -262,7 +262,7 @@ export class Button extends Control {
             }
         } else {
             // 只有图标或只有文本时，居中显示
-            if (this.icon) this.icon.setPosition(0, 0);
+            if (this.icon)  this.icon.setPosition(0, 0).setOrigin(0.5);
             if (this.label) this.label.setPosition(0, 0);
         }
     }

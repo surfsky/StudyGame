@@ -6,7 +6,7 @@ import { Rect } from '../controls/Rect';
 import { RectShape } from '../controls/basic/RectShape';
 import { Column } from '../controls/layouts/Column';
 import { CheckBox } from '../controls/forms/CheckBox';
-import { TestScene } from './TestScene';
+import { TestScene } from './SceneBase';
 
 /**测试基础控件场景 */
 export class TestControls extends TestScene {

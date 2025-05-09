@@ -1,5 +1,5 @@
 import Phaser from 'phaser';
-import { TestScene } from './TestScene';
+import { TestScene } from './SceneBase';
 import { CheckBox } from '../controls/forms/CheckBox';
 import { Switcher } from '../controls/forms/Switcher';
 import { RadioBox } from '../controls/forms/RadioBox';

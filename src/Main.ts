@@ -1,7 +1,6 @@
 import 'phaser';
 import { StudyWelcomeScene } from './study/StudyWelcomeScene';
 import { StudyScene } from './study/StudyScene';
-import { MessageScene } from './controls/overlays/MessageScene';
 import { AboutScene } from './AboutScene';
 
 // 检测是否为移动设备
@@ -19,7 +18,6 @@ const config: Phaser.Types.Core.GameConfig = {
   scene: [
     StudyWelcomeScene, 
     StudyScene,
-    MessageScene,
     AboutScene
   ],
   physics: {

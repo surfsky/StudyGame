@@ -1,5 +1,5 @@
 import { Scene } from 'phaser';
-import { TestScene } from './TestScene';
+import { TestScene } from './SceneBase';
 
 export class TestBlock extends TestScene {
     private cntX = 20;

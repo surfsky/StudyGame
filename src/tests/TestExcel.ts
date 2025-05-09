@@ -3,7 +3,7 @@ import { Button } from '../controls/buttons/Button';
 import { Panel } from '../controls/Panel';
 import * as XLSX from 'xlsx';
 import { Loading } from '../controls/overlays/Loading';
-import { TestScene } from './TestScene';
+import { TestScene } from './SceneBase';
 
 /**测试Excel导入场景 */
 export class TestExcel extends TestScene {
